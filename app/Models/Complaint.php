@@ -12,10 +12,14 @@ class Complaint extends Model
     protected $fillable = [
         'reference_number',
         'client_id',
-        'subject',
-        'description',
-        'location',
+        'network_type',
         'priority',
+        'description',
+        'vertical',
+        'user_name',
+        'file_path',
+        'section',
+        'intercom',
         'status',
         'assigned_to',
         'resolution'
@@ -24,7 +28,11 @@ class Complaint extends Model
     protected $casts = [
         'priority' => 'string',
         'status' => 'string',
+        'network_type' => 'string',
+        'vertical' => 'string',
     ];
+
+    
 
     protected $appends = ['status_color', 'priority_color'];
 

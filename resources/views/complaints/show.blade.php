@@ -10,18 +10,10 @@
             </h2>
             <div class="mb-2">
                 <span class="badge bg-secondary me-2">Priority:
-                    @php
-                        $priorityColors = [
-                            'high' => 'danger',
-                            'medium' => 'warning',
-                            'low' => 'success'
-                        ];
-                        $priority = strtolower($complaint->priority);
-                    @endphp
-                    <span class="badge bg-{{ $priorityColors[$priority] ?? 'secondary' }} ms-1">{{ ucfirst($complaint->priority) }}</span>
+                    <span class="badge bg-{{ $complaint->priority_color }} ms-1">{{ ucfirst($complaint->priority) }}</span>
                 </span>
-                <span class="badge bg-info me-2">Subject: {{ $complaint->subject }}</span>
-                <span class="badge bg-light text-dark">Location: {{ $complaint->location }}</span>
+                <span class="badge bg-info me-2">Network: {{ ucfirst($complaint->network_type) }}</span>
+                <span class="badge bg-light text-dark">Vertical: {{ ucfirst($complaint->vertical) }}</span>
             </div>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -66,21 +58,46 @@
                                 @if ($complaint->client && $complaint->client_id != 0)
                                     <i class="bi bi-person-circle"></i> {{ $complaint->client->full_name }}
                                 @else
-                                    <span class="text-muted">Guest User</span>
+                                    <i class="bi bi-person-circle"></i> {{ $complaint->user_name }} (Guest)
                                 @endif
                             </p>
+                            
+                            <p class="mb-1 fw-semibold">Network Type:</p>
+                            <p class="mb-2">{{ ucfirst($complaint->network_type) }}</p>
+                            
+                            <p class="mb-1 fw-semibold">Section:</p>
+                            <p class="mb-2">{{ ucfirst($complaint->section) }}</p>
                         </div>
                         <div class="col-md-6">
                             <p class="mb-1 fw-semibold">Created At:</p>
                             <p class="mb-2"><i class="bi bi-calendar"></i> {{ $complaint->created_at->format('M d, Y H:i') }}</p>
+                            
+                            <p class="mb-1 fw-semibold">Vertical:</p>
+                            <p class="mb-2">{{ ucfirst($complaint->vertical) }}</p>
+                            
+                            <p class="mb-1 fw-semibold">Intercom:</p>
+                            <p class="mb-2">{{ $complaint->intercom }}</p>
                         </div>
                     </div>
+                    
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <p class="mb-1 fw-semibold">Description:</p>
                             <div class="alert alert-secondary">{{ $complaint->description }}</div>
                         </div>
                     </div>
+                    
+                    @if($complaint->file_path)
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <p class="mb-1 fw-semibold">Attachment:</p>
+                            <a href="{{ Storage::url($complaint->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-file-earmark"></i> View Attachment
+                            </a>
+                        </div>
+                    </div>
+                    @endif
+                    
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <p class="mb-1 fw-semibold">Last Updated:</p>
@@ -103,7 +120,7 @@
                     <ul class="timeline list-unstyled">
                         @foreach($complaint->actions as $action)
                             <li class="mb-4 position-relative ps-4">
-                                <span class="position-absolute top-0 start-0 translate-middle p-2 bg-{{ $action->action === 'resolved' ? 'success' : ($action->action === 'reverted' ? 'warning' : 'primary') }} border border-light rounded-circle" style="        margin-top: 11px;"></span>
+                                <span class="position-absolute top-0 start-0 translate-middle p-2 bg-{{ $action->action === 'resolved' ? 'success' : ($action->action === 'reverted' ? 'warning' : 'primary') }} border border-light rounded-circle" style="margin-top: 11px;"></span>
                                 <div class="ms-3">
                                     <h6 class="mb-1">{{ ucfirst($action->action) }}</h6>
                                     <div class="text-muted small mb-1">
@@ -154,42 +171,37 @@
                 </div>
             </div>
 
-            <!-- Comments Card -->
-            <!-- <div class="card shadow-sm">
+            <!-- Quick Stats Card -->
+            <div class="card shadow-sm mb-4">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Comments</h5>
+                    <h5 class="mb-0">Ticket Details</h5>
                 </div>
                 <div class="card-body">
-                    @auth
-                        <form action="{{ route('complaints.comment', $complaint) }}" method="POST" class="mb-4">
-                            @csrf
-                            <div class="mb-3">
-                                <textarea name="comment" class="form-control" rows="3" placeholder="Add a comment..." required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Add Comment</button>
-                        </form>
-                    @endauth
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Priority:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-{{ $complaint->priority_color }}">
+                                {{ ucfirst($complaint->priority) }}
+                            </span>
+                        </dd>
 
-                    <div class="comments">
-                        @forelse($complaint->comments ?? [] as $comment)
-                            <div class="comment mb-3 p-2 border rounded bg-light">
-                                <div class="d-flex align-items-center mb-1">
-                                    <div class="avatar bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 1rem;">
-                                        {{ substr($comment->user->full_name, 0, 1) }}
-                                    </div>
-                                    <div class="ms-2">
-                                        <strong>{{ $comment->user->full_name }}</strong>
-                                        <span class="text-muted small">&nbsp;{{ $comment->created_at->format('M d, Y H:i') }}</span>
-                                    </div>
-                                </div>
-                                <div>{{ $comment->comment }}</div>
-                            </div>
-                        @empty
-                            <p class="text-muted">No comments yet.</p>
-                        @endforelse
-                    </div>
+                        <dt class="col-sm-5">Network Type:</dt>
+                        <dd class="col-sm-7">{{ ucfirst($complaint->network_type) }}</dd>
+
+                        <dt class="col-sm-5">Vertical:</dt>
+                        <dd class="col-sm-7">{{ ucfirst($complaint->vertical) }}</dd>
+
+                        <dt class="col-sm-5">Section:</dt>
+                        <dd class="col-sm-7">{{ ucfirst($complaint->section) }}</dd>
+
+                        <dt class="col-sm-5">Intercom:</dt>
+                        <dd class="col-sm-7">{{ $complaint->intercom }}</dd>
+
+                        <dt class="col-sm-5">Created:</dt>
+                        <dd class="col-sm-7">{{ $complaint->created_at->diffForHumans() }}</dd>
+                    </dl>
                 </div>
-            </div> -->
+            </div>
         </div>
     </div>
 </div>

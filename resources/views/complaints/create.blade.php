@@ -17,78 +17,119 @@
                 <h5 class="card-title mb-0">Ticket Information</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('complaints.store') }}" method="POST">
+                <form action="{{ route('complaints.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    
+
+                    <!-- Network Type -->
                     <div class="mb-3">
-                        <label for="subject" class="form-label">Subject</label>
-                        <input type="text" class="form-control @error('subject') is-invalid @enderror" 
-                               id="subject" name="subject" value="{{ old('subject') }}" required>
-                        @error('subject')
+                        <label for="network_type" class="form-label">Network Type *</label>
+                        <select class="form-select @error('network_type') is-invalid @enderror" 
+                                id="network_type" name="network_type" required>
+                            <option value="">Select --</option>
+                            <option value="fiber" {{ old('network_type') == 'fiber' ? 'selected' : '' }}>Fiber</option>
+                            <option value="wireless" {{ old('network_type') == 'wireless' ? 'selected' : '' }}>Wireless</option>
+                            <option value="copper" {{ old('network_type') == 'copper' ? 'selected' : '' }}>Copper</option>
+                        </select>
+                        @error('network_type')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
+                    <!-- Priority (Radio Buttons) -->
                     <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
+                        <label class="form-label">Priority *</label>
+                        <div class="form-check">
+                            <input class="form-check-input @error('priority') is-invalid @enderror" 
+                                type="radio" name="priority" id="high" value="high" 
+                                {{ old('priority') == 'high' ? 'checked' : '' }} required>
+                            <label class="form-check-label" for="high">High</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="priority" 
+                                id="medium" value="medium" 
+                                {{ old('priority') == 'medium' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="medium">Medium</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="priority" 
+                                id="low" value="low" 
+                                {{ old('priority') == 'low' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="low">Low</label>
+                        </div>
+                        @error('priority')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Complaint Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Complaint Description *</label>
                         <textarea class="form-control @error('description') is-invalid @enderror" 
-                                  id="description" name="description" rows="4" required>{{ old('description') }}</textarea>
+                                id="description" name="description" rows="4" required>{{ old('description') }}</textarea>
                         @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
+                    <!-- Verticals -->
                     <div class="mb-3">
-                        <label for="location" class="form-label">Location</label>
-                        <input type="text" class="form-control @error('location') is-invalid @enderror" 
-                               id="location" name="location" value="{{ old('location') }}" required>
-                        @error('location')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="priority" class="form-label">Priority</label>
-                        <select class="form-select @error('priority') is-invalid @enderror" 
-                                id="priority" name="priority" required>
-                            <option value="">Select Priority</option>
-                            <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Low</option>
-                            <option value="medium" {{ old('priority') == 'medium' ? 'selected' : '' }}>Medium</option>
-                            <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High</option>
+                        <label for="vertical" class="form-label">Verticals *</label>
+                        <select class="form-select @error('vertical') is-invalid @enderror" 
+                                id="vertical" name="vertical" required>
+                            <option value="">Select --</option>
+                            <option value="it" {{ old('vertical') == 'it' ? 'selected' : '' }}>IT</option>
+                            <option value="hr" {{ old('vertical') == 'hr' ? 'selected' : '' }}>HR</option>
+                            <option value="facilities" {{ old('vertical') == 'facilities' ? 'selected' : '' }}>Facilities</option>
                         </select>
-                        @error('priority')
+                        @error('vertical')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
-                    @guest
-                        <div class="mb-3">
-                            <label for="client_name" class="form-label">Your Name</label>
-                            <input type="text" class="form-control @error('client_name') is-invalid @enderror" 
-                                   id="client_name" name="client_name" value="{{ old('client_name') }}" required>
-                            @error('client_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <!-- User Name -->
+                    <div class="mb-3">
+                        <label for="user_name" class="form-label">User Name *</label>
+                        <input type="text" class="form-control @error('user_name') is-invalid @enderror" 
+                            id="user_name" name="user_name" value="{{ old('user_name') }}" required>
+                        @error('user_name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="client_email" class="form-label">Your Email</label>
-                            <input type="email" class="form-control @error('client_email') is-invalid @enderror" 
-                                   id="client_email" name="client_email" value="{{ old('client_email') }}" required>
-                            @error('client_email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <!-- File Upload -->
+                    <div class="mb-3">
+                        <label for="file" class="form-label">File Upload</label>
+                        <input type="file" class="form-control @error('file') is-invalid @enderror" 
+                            id="file" name="file">
+                        @error('file')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                        <div class="mb-3">
-                            <label for="client_phone" class="form-label">Your Phone</label>
-                            <input type="tel" class="form-control @error('client_phone') is-invalid @enderror" 
-                                   id="client_phone" name="client_phone" value="{{ old('client_phone') }}" required>
-                            @error('client_phone')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    @endguest
+                    <!-- Section -->
+                    <div class="mb-3">
+                        <label for="section" class="form-label">Section *</label>
+                        <select class="form-select @error('section') is-invalid @enderror" 
+                                id="section" name="section" required>
+                            <option value="">Select --</option>
+                            <option value="north" {{ old('section') == 'north' ? 'selected' : '' }}>North</option>
+                            <option value="south" {{ old('section') == 'south' ? 'selected' : '' }}>South</option>
+                            <option value="east" {{ old('section') == 'east' ? 'selected' : '' }}>East</option>
+                        </select>
+                        @error('section')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <!-- Intercom -->
+                    <div class="mb-3">
+                        <label for="intercom" class="form-label">Intercom *</label>
+                        <input type="text" class="form-control @error('intercom') is-invalid @enderror" 
+                            id="intercom" name="intercom" value="{{ old('intercom') }}" required>
+                        @error('intercom')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">Submit Ticket</button>

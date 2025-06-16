@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\ComplaintAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ComplaintController extends Controller
 {
@@ -60,21 +61,33 @@ class ComplaintController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'subject' => 'required|string|max:255',
-            'description' => 'required|string',
-            'location' => 'required|string|max:255',
+            'network_type' => 'required|string|max:255',
             'priority' => 'required|in:low,medium,high',
+            'description' => 'required|string',
+            'vertical' => 'required|string|max:255',
+            'user_name' => 'required|string|max:255',
+            'file' => 'nullable|file|max:2048', // 2MB max
+            'section' => 'required|string|max:255',
+            'intercom' => 'required|string|max:255',
         ]);
 
-    // dd(auth()->user()->id);
+        // Handle file upload
+        $filePath = null;
+        if ($request->hasFile('file')) {
+            $filePath = $request->file('file')->store('complaint_files');
+        }
 
         $complaint = Complaint::create([
             'reference_number' => 'CMP-' . date('Ymd') . '-' . strtoupper(Str::random(4)),
             'client_id' => auth()->user()->id ?? 0,
-            'subject' => $validated['subject'],
-            'description' => $validated['description'],
-            'location' => $validated['location'],
+            'network_type' => $validated['network_type'],
             'priority' => $validated['priority'],
+            'description' => $validated['description'],
+            'vertical' => $validated['vertical'],
+            'user_name' => $validated['user_name'],
+            'file_path' => $filePath,
+            'section' => $validated['section'],
+            'intercom' => $validated['intercom'],
             'status' => 'pending'
         ]);
 
@@ -105,29 +118,38 @@ class ComplaintController extends Controller
 
     public function update(Request $request, Complaint $complaint)
     {
-
-        // dd(auth()->id());
-
-
         \Log::info("Update method triggered for complaint #{$complaint->id}");
-    \Log::info("Request data:", $request->all());
+        \Log::info("Request data:", $request->all());
+
         $this->authorize('update', $complaint);
 
         $validated = $request->validate([
-            'subject' => 'required|string|max:255',
+            'network_type' => 'required|string|max:255',
             'description' => 'required|string',
-            'location' => 'required|string|max:255',
+            'vertical' => 'required|string|max:255',
+            'user_name' => 'required|string|max:255',
+            'section' => 'required|string|max:255',
+            'intercom' => 'required|string|max:255',
             'priority' => 'required|in:low,medium,high',
-            'status' => 'required|in:pending,assigned,in_progress,resolved,closed'
+            'status' => 'required|in:pending,assigned,in_progress,resolved,closed',
+            'file' => 'nullable|file|max:2048'
         ]);
 
+
+        // Handle file upload if new file is provided
+        if ($request->hasFile('file')) {
+            // Delete old file if exists
+            if ($complaint->file_path) {
+                Storage::delete($complaint->file_path);
+            }
+            $validated['file_path'] = $request->file('file')->store('complaint_files');
+        }
         $complaint->update($validated);
 
         // Create action record
         ComplaintAction::create([
             'complaint_id' => $complaint->id,
-            // 'user_id' => auth()->id(),
-            'user_id' => auth()->user()->id,
+            'user_id' =>  auth()->user()->id ?? 0,
             'action' => 'updated',
             'description' => 'Complaint updated'
         ]);
@@ -139,7 +161,7 @@ class ComplaintController extends Controller
     public function assign(Request $request, Complaint $complaint)
     {
         $user = auth()->user();
-        
+
         if (!$user->isManager() && !$user->isVM() && !$user->isNFO()) {
             abort(403, 'Unauthorized action.');
         }
@@ -186,7 +208,7 @@ class ComplaintController extends Controller
     public function resolve(Request $request, Complaint $complaint)
     {
         $user = auth()->user();
-        
+
         if (!$user->isNFO()) {
             abort(403, 'Only NFOs can resolve complaints.');
         }
@@ -220,7 +242,7 @@ class ComplaintController extends Controller
     public function revert(Request $request, Complaint $complaint)
     {
         $user = auth()->user();
-        
+
         if (!$user->isVM()) {
             abort(403, 'Only VMs can revert complaints to managers.');
         }
@@ -254,19 +276,19 @@ class ComplaintController extends Controller
     {
         $user = auth()->user();
         $complaint = null;
-        
+
         if ($request->has('complaint_id')) {
             $complaint = Complaint::find($request->complaint_id);
         }
 
         $assignableUsers = $user->getAssignableUsers();
-        
+
         return response()->json($assignableUsers);
     }
 
     public function history(Request $request)
     {
-        $query = \App\Models\Complaint::with(['actions' => function($q) {
+        $query = \App\Models\Complaint::with(['actions' => function ($q) {
             $q->latest()->limit(1);
         }, 'actions.user']);
 
@@ -277,26 +299,26 @@ class ComplaintController extends Controller
 
         // Filter by action
         if ($request->filled('action')) {
-            $query->whereHas('actions', function($q) use ($request) {
+            $query->whereHas('actions', function ($q) use ($request) {
                 $q->where('action', $request->action);
             });
         }
 
         // Filter by user
         if ($request->filled('by')) {
-            $query->whereHas('actions.user', function($q) use ($request) {
+            $query->whereHas('actions.user', function ($q) use ($request) {
                 $q->where('username', $request->by);
             });
         }
 
         // Filter by date range
         if ($request->filled('date_from')) {
-            $query->whereHas('actions', function($q) use ($request) {
+            $query->whereHas('actions', function ($q) use ($request) {
                 $q->whereDate('created_at', '>=', $request->date_from);
             });
         }
         if ($request->filled('date_to')) {
-            $query->whereHas('actions', function($q) use ($request) {
+            $query->whereHas('actions', function ($q) use ($request) {
                 $q->whereDate('created_at', '<=', $request->date_to);
             });
         }
