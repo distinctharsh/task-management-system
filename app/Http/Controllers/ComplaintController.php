@@ -66,6 +66,7 @@ class ComplaintController extends Controller
             'priority' => 'required|in:low,medium,high',
         ]);
 
+        // dd(auth()->id());
         $complaint = Complaint::create([
             'reference_number' => 'CMP-' . date('Ymd') . '-' . strtoupper(Str::random(4)),
             'client_id' => auth()->id() ?? 0,

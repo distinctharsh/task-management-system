@@ -47,11 +47,16 @@
         .btn-outline-light {
             border-width: 2px;
         }
+
+        body {
+            padding-top: 70px; 
+        }
+
     </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">
                 {{ config('app.name', 'TMS') }}
