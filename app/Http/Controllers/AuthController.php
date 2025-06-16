@@ -46,38 +46,42 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request)
+   public function register(Request $request)
     {
+        // Validate the request
         $validator = Validator::make($request->all(), [
             'username' => 'required|string|max:50|unique:users',
-            'password' => 'required|string|min:6|confirmed',
             'full_name' => 'required|string|max:100',
-            'email' => 'required|string|email|max:100|unique:users',
+            'email' => 'required|email|max:100|unique:users',
             'mobile' => 'required|string|max:20',
-            'address' => 'nullable|string',
+            'password' => 'required|string|min:6|confirmed',
+            'role' => 'required|in:admin,manager,vm,nfo,client',
         ]);
 
+        // Check if validation fails
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
 
+        // Create the user
         $user = User::create([
             'username' => $request->username,
-            'password' => Hash::make($request->password),
             'full_name' => $request->full_name,
             'email' => $request->email,
             'mobile' => $request->mobile,
-            'address' => $request->address,
-            'role' => 'client',
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
         ]);
 
+        // Log the user in
         Auth::login($user);
 
-        return redirect()->intended('dashboard');
+        // Redirect to dashboard
+        return redirect()->intended('dashboard')
+            ->with('success', 'Registration successful!');
     }
-
     public function logout(Request $request)
     {
         Auth::logout();

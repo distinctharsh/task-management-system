@@ -63,17 +63,30 @@
                         <div class="mb-3">
                             <label for="role" class="form-label">Role</label>
                             <select class="form-select @error('role') is-invalid @enderror" 
-                                    id="role" name="role" required>
-                                <option value="">Select a role</option>
-                                <option value="manager" {{ old('role') == 'manager' ? 'selected' : '' }}>Manager</option>
-                                <option value="vm" {{ old('role') == 'vm' ? 'selected' : '' }}>VM</option>
-                                <option value="nfo" {{ old('role') == 'nfo' ? 'selected' : '' }}>NFO</option>
-                                <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>Regular User</option>
-                            </select>
+        id="role" name="role" required>
+    <option value="">Select a role</option>
+    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+    <option value="manager" {{ old('role') == 'manager' ? 'selected' : '' }}>Manager</option>
+    <option value="vm" {{ old('role') == 'vm' ? 'selected' : '' }}>VM</option>
+    <option value="nfo" {{ old('role') == 'nfo' ? 'selected' : '' }}>NFO</option>
+    <option value="client" {{ old('role') == 'client' ? 'selected' : '' }}>Client</option>
+</select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
+
+
+                        <!-- Add this field with other form fields -->
+<div class="mb-3">
+    <label for="mobile" class="form-label">Mobile Number</label>
+    <input type="text" class="form-control @error('mobile') is-invalid @enderror" 
+           id="mobile" name="mobile" value="{{ old('mobile') }}" required>
+    @error('mobile')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">
