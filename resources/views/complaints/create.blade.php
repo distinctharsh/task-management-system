@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-md-12 mb-4">
         <div class="d-flex justify-content-between align-items-center">
-            <h2>Create New Complaint</h2>
+            <h2>Create New Ticket</h2>
             <a href="{{ route('complaints.index') }}" class="btn btn-secondary">Back to List</a>
         </div>
     </div>
@@ -14,7 +14,7 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title mb-0">Complaint Information</h5>
+                <h5 class="card-title mb-0">Ticket Information</h5>
             </div>
             <div class="card-body">
                 <form action="{{ route('complaints.store') }}" method="POST">
@@ -91,7 +91,7 @@
                     @endguest
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                        <button type="submit" class="btn btn-primary">Submit Ticket</button>
                     </div>
                 </form>
             </div>
@@ -104,7 +104,7 @@
                 <h5 class="card-title mb-0">Information</h5>
             </div>
             <div class="card-body">
-                <p class="mb-3">Please provide all the required information to create a new complaint. Our team will review your complaint and take appropriate action.</p>
+                <p class="mb-3">Please provide all the required information to create a new ticket. Our team will review your ticket and take appropriate action.</p>
                 
                 <h6 class="mb-2">Priority Levels:</h6>
                 <ul class="list-unstyled mb-3">
@@ -124,10 +124,10 @@
 
                 <h6 class="mb-2">What happens next?</h6>
                 <ol class="mb-0">
-                    <li class="mb-2">Your complaint will be assigned a unique reference number</li>
+                    <li class="mb-2">Your ticket will be assigned a unique reference number</li>
                     <li class="mb-2">A manager will review and assign it to the appropriate team</li>
-                    <li class="mb-2">You'll receive updates on the status of your complaint</li>
-                    <li>You can track your complaint using the reference number</li>
+                    <li class="mb-2">You'll receive updates on the status of your ticket</li>
+                    <li>You can track your ticket using the reference number</li>
                 </ol>
             </div>
         </div>

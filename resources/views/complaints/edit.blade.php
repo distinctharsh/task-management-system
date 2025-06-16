@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-md-12 mb-4">
         <div class="d-flex justify-content-between align-items-center">
-            <h2>Edit Complaint #{{ $complaint->id }}</h2>
+            <h2>Edit Ticket #{{ $complaint->id }}</h2>
             <div>
                 <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-secondary">Back to Details</a>
             </div>
@@ -16,7 +16,7 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title mb-0">Edit Complaint</h5>
+                <h5 class="card-title mb-0">Edit Ticket</h5>
             </div>
             <div class="card-body">
                 <form action="{{ route('complaints.update', $complaint) }}" method="POST">
@@ -77,7 +77,7 @@
                         @enderror
                     </div>
 
-                    <button type="submit" class="btn btn-primary">Update Complaint</button>
+                    <button type="submit" class="btn btn-primary">Update Ticket</button>
                 </form>
             </div>
         </div>
@@ -86,7 +86,7 @@
     <div class="col-md-4">
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="card-title mb-0">Complaint Details</h5>
+                <h5 class="card-title mb-0">Ticket Details</h5>
             </div>
             <div class="card-body">
                 <dl class="row mb-0">

@@ -89,7 +89,7 @@
                     <dt class="col-sm-4">Last Updated</dt>
                     <dd class="col-sm-8">{{ $user->updated_at->format('M d, Y H:i') }}</dd>
 
-                    <dt class="col-sm-4">Total Complaints</dt>
+                    <dt class="col-sm-4">Total Tickets</dt>
                     <dd class="col-sm-8">{{ $user->complaints->count() }}</dd>
 
                     <dt class="col-sm-4">Assigned Tasks</dt>
@@ -105,17 +105,17 @@
             <div class="card-body">
                 <h6>User Role</h6>
                 <ul class="list-unstyled mb-4">
-                    <li>• Can create and manage their own complaints</li>
-                    <li>• Can view and comment on assigned complaints</li>
+                    <li>• Can create and manage their own tickets</li>
+                    <li>• Can view and comment on assigned tickets</li>
                     <li>• Cannot access user management</li>
                 </ul>
 
                 <h6>Admin Role</h6>
                 <ul class="list-unstyled mb-0">
-                    <li>• Full access to all complaints</li>
+                    <li>• Full access to all tickets</li>
                     <li>• Can manage user accounts</li>
-                    <li>• Can assign complaints to users</li>
-                    <li>• Can update complaint statuses</li>
+                    <li>• Can assign tickets to users</li>
+                    <li>• Can update ticket statuses</li>
                 </ul>
             </div>
         </div>

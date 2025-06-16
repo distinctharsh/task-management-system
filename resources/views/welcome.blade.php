@@ -49,7 +49,7 @@
         }
 
         body {
-            padding-top: 70px; 
+            padding-top: 100px; 
         }
 
     </style>
@@ -58,9 +58,11 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ url('/') }}">
-                {{ config('app.name', 'TMS') }}
-            </a>
+               <div class="d-flex align-items-center" style="height: 80px;">
+                    <img src="{{ asset('images/emblem-dark.png') }}" alt="Emblem" class="h-100" style="object-fit: contain;">
+                    <img src="{{ asset('images/nic-main.png') }}" alt="NIC Logo" class="h-100 ms-2" style="object-fit: contain;">
+                </div>
+            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -90,9 +92,10 @@
     <section class="hero-section">
         <div class="container text-center">
             <h1 class="display-4 mb-4">Welcome to Ticket Management System</h1>
-            <p class="lead mb-4">Submit your complaints and track their progress easily</p>
+              <img src="{{ asset('images/flow-diagram.png') }}" alt="Work Flow" class="img-fluid mb-4" style="max-height: 300px;">
+            <p class="lead mb-4">Generate your ticket and track their progress easily</p>
             <div class="d-flex justify-content-center gap-3">
-                <a href="{{ route('complaints.create') }}" class="btn btn-light btn-lg">Create Complaint</a>
+                <a href="{{ route('complaints.create') }}" class="btn btn-light btn-lg">Create Ticket</a>
                 @guest
                     <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg">Login</a>
                 @endguest
@@ -108,7 +111,7 @@
                     <div class="card feature-card h-100">
                         <div class="card-body text-center p-4">
                             <h3 class="h5 mb-3">Easy Submission</h3>
-                            <p class="text-muted mb-0">Submit your complaints quickly and easily without any login required.</p>
+                            <p class="text-muted mb-0">Submit your tickets quickly and easily without any login required.</p>
                         </div>
                     </div>
                 </div>
@@ -116,7 +119,7 @@
                     <div class="card feature-card h-100">
                         <div class="card-body text-center p-4">
                             <h3 class="h5 mb-3">Track Progress</h3>
-                            <p class="text-muted mb-0">Monitor the status of your complaints in real-time.</p>
+                            <p class="text-muted mb-0">Monitor the status of your tickets in real-time.</p>
                         </div>
                     </div>
                 </div>
@@ -124,7 +127,7 @@
                     <div class="card feature-card h-100">
                         <div class="card-body text-center p-4">
                             <h3 class="h5 mb-3">Quick Resolution</h3>
-                            <p class="text-muted mb-0">Our team works efficiently to resolve your complaints.</p>
+                            <p class="text-muted mb-0">Our team works efficiently to resolve your tickets.</p>
                         </div>
                     </div>
                 </div>
@@ -134,8 +137,26 @@
 
     <!-- Footer -->
     <footer class="bg-white py-4 mt-auto">
-        <div class="container text-center">
-            <p class="text-muted mb-0">&copy; {{ date('Y') }} {{ config('app.name', 'TMS') }}. All rights reserved.</p>
+     
+        
+
+        <div class="container">
+            <div class="row">
+                <div class="col-6 d-flex">
+                    
+                    
+                    <img src="{{ asset('images/nic.png') }}" alt="NIC">
+                    <div class="div mt-1">
+                        <p class="text-muted mb-0">&copy; {{ date('Y') }} {{ config('app.name', 'TMS') }}. All rights reserved.</p>
+                        
+                    </div>
+
+                </div>
+
+                <div class="col-6 pt-1" style="text-align: right;">
+                    <p class="text-muted mb-0">Last updated 16/06/2025 - 5:03:44</p>
+                </div>
+            </div>
         </div>
     </footer>
 

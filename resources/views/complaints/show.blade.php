@@ -5,7 +5,7 @@
     <div class="row mb-4 align-items-center">
         <div class="col-md-8">
             <h2 class="fw-bold mb-1">
-                Complaint: <span class="text-primary">{{ $complaint->reference_number }}</span>
+                Ticket: <span class="text-primary">{{ $complaint->reference_number }}</span>
                 <span class="badge bg-{{ $complaint->status_color }} ms-2">{{ ucfirst($complaint->status) }}</span>
             </h2>
             <div class="mb-2">
@@ -103,7 +103,7 @@
                     <ul class="timeline list-unstyled">
                         @foreach($complaint->actions as $action)
                             <li class="mb-4 position-relative ps-4">
-                                <span class="position-absolute top-0 start-0 translate-middle p-2 bg-{{ $action->action === 'resolved' ? 'success' : ($action->action === 'reverted' ? 'warning' : 'primary') }} border border-light rounded-circle"></span>
+                                <span class="position-absolute top-0 start-0 translate-middle p-2 bg-{{ $action->action === 'resolved' ? 'success' : ($action->action === 'reverted' ? 'warning' : 'primary') }} border border-light rounded-circle" style="        margin-top: 11px;"></span>
                                 <div class="ms-3">
                                     <h6 class="mb-1">{{ ucfirst($action->action) }}</h6>
                                     <div class="text-muted small mb-1">
@@ -155,7 +155,7 @@
             </div>
 
             <!-- Comments Card -->
-            <div class="card shadow-sm">
+            <!-- <div class="card shadow-sm">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">Comments</h5>
                 </div>
@@ -189,7 +189,7 @@
                         @endforelse
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>
@@ -201,7 +201,7 @@
             <form action="{{ route('complaints.assign', $complaint) }}" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">Assign Complaint</h5>
+                    <h5 class="modal-title">Assign Ticket</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -232,7 +232,7 @@
             <form action="{{ route('complaints.resolve', $complaint) }}" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">Resolve Complaint</h5>
+                    <h5 class="modal-title">Resolve Ticket</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">

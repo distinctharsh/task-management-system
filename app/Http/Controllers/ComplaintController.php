@@ -66,10 +66,11 @@ class ComplaintController extends Controller
             'priority' => 'required|in:low,medium,high',
         ]);
 
-        // dd(auth()->id());
+    // dd(auth()->user()->id);
+
         $complaint = Complaint::create([
             'reference_number' => 'CMP-' . date('Ymd') . '-' . strtoupper(Str::random(4)),
-            'client_id' => auth()->id() ?? 0,
+            'client_id' => auth()->user()->id ?? 0,
             'subject' => $validated['subject'],
             'description' => $validated['description'],
             'location' => $validated['location'],
@@ -80,7 +81,7 @@ class ComplaintController extends Controller
         // Create initial action record
         ComplaintAction::create([
             'complaint_id' => $complaint->id,
-            'user_id' => auth()->id() ?? 0,
+            'user_id' => auth()->user()->id ?? 0,
             'action' => 'created',
             'description' => 'Complaint created'
         ]);

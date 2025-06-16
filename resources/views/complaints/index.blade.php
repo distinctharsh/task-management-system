@@ -4,8 +4,8 @@
 <div class="row">
     <div class="col-md-12 mb-4">
         <div class="d-flex justify-content-between align-items-center">
-            <h2>Complaints</h2>
-            <a href="{{ route('complaints.create') }}" class="btn btn-primary">Create New Complaint</a>
+            <h2>Tickets</h2>
+            <a href="{{ route('complaints.create') }}" class="btn btn-primary">Create New Ticket</a>
         </div>
     </div>
 </div>
@@ -14,7 +14,7 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title mb-0">All Complaints</h5>
+                <h5 class="card-title mb-0">All Tickets</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -139,7 +139,7 @@
                                                     <form action="{{ route('complaints.resolve', $complaint) }}" method="POST">
                                                         @csrf
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title">Resolve Complaint</h5>
+                                                            <h5 class="modal-title">Resolve Ticket</h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                         </div>
                                                         <div class="modal-body">
@@ -189,7 +189,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="text-center">No complaints found.</td>
+                                    <td colspan="8" class="text-center">No tickets found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

@@ -80,16 +80,16 @@
             <div class="card-body">
                 <h6>User Role</h6>
                 <ul class="list-unstyled mb-4">
-                    <li>• Can create and manage their own complaints</li>
-                    <li>• Can view and comment on assigned complaints</li>
+                    <li>• Can create and manage their own ticket</li>
+                    <li>• Can view and comment on assigned ticket</li>
                     <li>• Cannot access user management</li>
                 </ul>
 
                 <h6>Admin Role</h6>
                 <ul class="list-unstyled mb-0">
-                    <li>• Full access to all complaints</li>
+                    <li>• Full access to all ticket</li>
                     <li>• Can manage user accounts</li>
-                    <li>• Can assign complaints to users</li>
+                    <li>• Can assign ticket to users</li>
                     <li>• Can update complaint statuses</li>
                 </ul>
             </div>

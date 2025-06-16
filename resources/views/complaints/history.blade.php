@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Complaint History</h4>
-                    <a href="{{ route('complaints.index') }}" class="btn btn-secondary">Back to Complaints</a>
+                    <a href="{{ route('complaints.index') }}" class="btn btn-secondary">Back to Tickets</a>
                 </div>
                 <div class="card-body">
                     <form method="GET" action="" class="mb-3">
@@ -46,7 +46,7 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Complaint Ref</th>
+                                    <th>Ticket Ref</th>
                                     <th>Action</th>
                                     <th>Recent Action By</th>
                                     <th>Date</th>
