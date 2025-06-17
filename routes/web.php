@@ -21,9 +21,18 @@ Route::get('/generate-hash/{password?}', function ($password = '123456') {
 
 
 // Public routes
-Route::get('/', function () {
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+
+// Redirect root URL to /home
+Route::redirect('/', '/home');
+
+// Show welcome view at /home
+Route::get('/home', function () {
     return view('welcome');
-});
+})->name('home');
 
 // Public complaint routes
 Route::get('/complaints/create', [ComplaintController::class, 'create'])->name('complaints.create');
@@ -41,7 +50,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -76,4 +85,4 @@ Route::middleware('auth')->group(function () {
 
 
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
