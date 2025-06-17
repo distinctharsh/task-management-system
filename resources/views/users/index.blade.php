@@ -75,33 +75,33 @@
                         </thead>
                         <tbody>
                             @forelse($users as $user)
-                                <tr>
-                                    <td>{{ $user->id }}</td>
-                                    <td>{{ $user->full_name }}</td>
-                                    <td>{{ $user->email }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $user->role == 'admin' ? 'danger' : 'primary' }}">
-                                            {{ ucfirst($user->role) }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $user->created_at->format('M d, Y H:i') }}</td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a href="{{ route('users.edit', $user) }}" class="btn btn-primary btn-sm">Edit</a>
-                                            @if($user->id !== auth()->id())
-                                                <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</button>
-                                                </form>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>{{ $user->id }}</td>
+                                <td>{{ $user->full_name }}</td>
+                                <td>{{ $user->email }}</td>
+                                <td>
+                                    <span class="badge bg-{{ $user->role == 'admin' ? 'danger' : 'primary' }}">
+                                        {{ ucfirst($user->role) }}
+                                    </span>
+                                </td>
+                                <td>{{ $user->created_at->format('M d, Y H:i') }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ route('users.edit', $user) }}" class="btn btn-primary btn-sm">Edit</a>
+                                        @if($user->id !== auth()->user()->id)
+                                        <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</button>
+                                        </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
                             @empty
-                                <tr>
-                                    <td colspan="6" class="text-center">No users found</td>
-                                </tr>
+                            <tr>
+                                <td colspan="6" class="text-center">No users found</td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -114,4 +114,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

@@ -19,7 +19,7 @@
                         <label for="first_name" class="form-label">First Name</label>
                         <input type="text" class="form-control @error('first_name') is-invalid @enderror" id="first_name" name="first_name" value="{{ old('first_name', $user->first_name) }}" required>
                         @error('first_name')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -27,7 +27,7 @@
                         <label for="last_name" class="form-label">Last Name</label>
                         <input type="text" class="form-control @error('last_name') is-invalid @enderror" id="last_name" name="last_name" value="{{ old('last_name', $user->last_name) }}" required>
                         @error('last_name')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -35,7 +35,7 @@
                         <label for="email" class="form-label">Email Address</label>
                         <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email) }}" required>
                         @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -43,7 +43,7 @@
                         <label for="password" class="form-label">New Password (leave blank to keep current)</label>
                         <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password">
                         @error('password')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -54,16 +54,16 @@
 
                     <div class="mb-3">
                         <label for="role" class="form-label">Role</label>
-                        <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required {{ $user->id === auth()->id() ? 'disabled' : '' }}>
+                        <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required {{ $user->id === auth()->user()->id ? 'disabled' : '' }}>
                             <option value="">Select Role</option>
                             <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>User</option>
                             <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>
                         @error('role')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        @if($user->id === auth()->id())
-                            <div class="form-text">You cannot change your own role.</div>
+                        @if($user->id === auth()->user()->id)
+                        <div class="form-text">You cannot change your own role.</div>
                         @endif
                     </div>
 
@@ -121,4 +121,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

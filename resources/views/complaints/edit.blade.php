@@ -12,6 +12,7 @@
     </div>
 </div>
 
+
 <div class="row">
     <div class="col-md-8">
         <div class="card">
@@ -23,118 +24,131 @@
                     @csrf
                     @method('PUT')
 
-                    <!-- Network Type -->
-                    <div class="mb-3">
-                        <label for="network_type" class="form-label">Network Type *</label>
-                        <select class="form-select @error('network_type') is-invalid @enderror" 
-                                id="network_type" name="network_type" required>
-                            <option value="">Select --</option>
-                            <option value="fiber" {{ old('network_type', $complaint->network_type) == 'fiber' ? 'selected' : '' }}>Fiber</option>
-                            <option value="wireless" {{ old('network_type', $complaint->network_type) == 'wireless' ? 'selected' : '' }}>Wireless</option>
-                            <option value="copper" {{ old('network_type', $complaint->network_type) == 'copper' ? 'selected' : '' }}>Copper</option>
-                        </select>
-                        @error('network_type')
+                    <!-- Row 1: Network Type and Priority -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="network_type_id" class="form-label">Network Type *</label>
+                            <select class="form-select @error('network_type_id') is-invalid @enderror"
+                                id="network_type_id" name="network_type_id" required>
+                                <option value="">Select --</option>
+                                @foreach($networkTypes as $type)
+                                <option value="{{ $type->id }}"
+                                    {{ old('network_type_id', $complaint->network_type_id) == $type->id ? 'selected' : '' }}>
+                                    {{ $type->name }}
+                                </option>
+                                @endforeach
+                            </select>
+                            @error('network_type_id')
                             <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Priority -->
-                    <div class="mb-3">
-                        <label for="priority" class="form-label">Priority *</label>
-                        <select class="form-select @error('priority') is-invalid @enderror" 
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="priority" class="form-label">Priority *</label>
+                            <select class="form-select @error('priority') is-invalid @enderror"
                                 id="priority" name="priority" required>
-                            <option value="low" {{ old('priority', $complaint->priority) == 'low' ? 'selected' : '' }}>Low</option>
-                            <option value="medium" {{ old('priority', $complaint->priority) == 'medium' ? 'selected' : '' }}>Medium</option>
-                            <option value="high" {{ old('priority', $complaint->priority) == 'high' ? 'selected' : '' }}>High</option>
-                        </select>
-                        @error('priority')
+                                <option value="low" {{ old('priority', $complaint->priority) == 'low' ? 'selected' : '' }}>Low</option>
+                                <option value="medium" {{ old('priority', $complaint->priority) == 'medium' ? 'selected' : '' }}>Medium</option>
+                                <option value="high" {{ old('priority', $complaint->priority) == 'high' ? 'selected' : '' }}>High</option>
+                            </select>
+                            @error('priority')
                             <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                            @enderror
+                        </div>
                     </div>
 
-                    <!-- Description -->
+                    <!-- Description (Full Width) -->
                     <div class="mb-3">
                         <label for="description" class="form-label">Complaint Description *</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror" 
-                                  id="description" name="description" rows="4" required>{{ old('description', $complaint->description) }}</textarea>
+                        <textarea class="form-control @error('description') is-invalid @enderror"
+                            id="description" name="description" rows="3" required>{{ old('description', $complaint->description) }}</textarea>
                         @error('description')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
-                    <!-- Vertical -->
-                    <div class="mb-3">
-                        <label for="vertical" class="form-label">Vertical *</label>
-                        <select class="form-select @error('vertical') is-invalid @enderror" 
-                                id="vertical" name="vertical" required>
-                            <option value="">Select --</option>
-                            <option value="it" {{ old('vertical', $complaint->vertical) == 'it' ? 'selected' : '' }}>IT</option>
-                            <option value="hr" {{ old('vertical', $complaint->vertical) == 'hr' ? 'selected' : '' }}>HR</option>
-                            <option value="facilities" {{ old('vertical', $complaint->vertical) == 'facilities' ? 'selected' : '' }}>Facilities</option>
-                        </select>
-                        @error('vertical')
+                    <!-- Row 2: Vertical and Section -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="vertical_id" class="form-label">Vertical *</label>
+                            <select class="form-select @error('vertical_id') is-invalid @enderror"
+                                id="vertical_id" name="vertical_id" required>
+                                <option value="">Select --</option>
+                                @foreach($verticals as $vertical)
+                                <option value="{{ $vertical->id }}"
+                                    {{ old('vertical_id', $complaint->vertical_id) == $vertical->id ? 'selected' : '' }}>
+                                    {{ $vertical->name }}
+                                </option>
+                                @endforeach
+                            </select>
+                            @error('vertical_id')
                             <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="section_id" class="form-label">Section *</label>
+                            <select class="form-select @error('section_id') is-invalid @enderror"
+                                id="section_id" name="section_id" required>
+                                <option value="">Select --</option>
+                                @foreach($sections as $section)
+                                <option value="{{ $section->id }}"
+                                    {{ old('section_id', $complaint->section_id) == $section->id ? 'selected' : '' }}>
+                                    {{ $section->name }}
+                                </option>
+                                @endforeach
+                            </select>
+                            @error('section_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
 
-                    <!-- User Name -->
-                    <div class="mb-3">
-                        <label for="user_name" class="form-label">User Name *</label>
-                        <input type="text" class="form-control @error('user_name') is-invalid @enderror" 
-                               id="user_name" name="user_name" value="{{ old('user_name', $complaint->user_name) }}" required>
-                        @error('user_name')
+                    <!-- Row 3: User Name and Intercom -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="user_name" class="form-label">User Name *</label>
+                            <input type="text" class="form-control @error('user_name') is-invalid @enderror"
+                                id="user_name" name="user_name" value="{{ old('user_name', $complaint->user_name) }}" required>
+                            @error('user_name')
                             <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="intercom" class="form-label">Intercom *</label>
+                            <input type="text" class="form-control @error('intercom') is-invalid @enderror"
+                                id="intercom" name="intercom" value="{{ old('intercom', $complaint->intercom) }}" required>
+                            @error('intercom')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
 
-                    <!-- File Upload -->
+                    <!-- File Upload (Full Width) -->
                     <div class="mb-3">
                         <label for="file" class="form-label">File Upload</label>
-                        <input type="file" class="form-control @error('file') is-invalid @enderror" 
-                               id="file" name="file">
+                        <input type="file" class="form-control @error('file') is-invalid @enderror"
+                            id="file" name="file">
                         @error('file')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                         @if($complaint->file_path)
-                            <div class="mt-2">
-                                <small>Current file: </small>
-                                <a href="{{ Storage::url($complaint->file_path) }}" target="_blank">
-                                    {{ basename($complaint->file_path) }}
-                                </a>
-                            </div>
+                        <div class="mt-2">
+                            <small>Current file: </small>
+                            <a href="{{ Storage::url($complaint->file_path) }}" target="_blank">
+                                {{ basename($complaint->file_path) }}
+                            </a>
+                            <!-- <button type="button" class="btn btn-sm btn-danger ms-2" onclick="document.getElementById('delete_file').value = '1'">
+                                Remove File
+                            </button> -->
+                            <input type="hidden" name="delete_file" id="delete_file" value="0">
+                        </div>
                         @endif
                     </div>
 
-                    <!-- Section -->
-                    <div class="mb-3">
-                        <label for="section" class="form-label">Section *</label>
-                        <select class="form-select @error('section') is-invalid @enderror" 
-                                id="section" name="section" required>
-                            <option value="">Select --</option>
-                            <option value="north" {{ old('section', $complaint->section) == 'north' ? 'selected' : '' }}>North</option>
-                            <option value="south" {{ old('section', $complaint->section) == 'south' ? 'selected' : '' }}>South</option>
-                            <option value="east" {{ old('section', $complaint->section) == 'east' ? 'selected' : '' }}>East</option>
-                        </select>
-                        @error('section')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Intercom -->
-                    <div class="mb-3">
-                        <label for="intercom" class="form-label">Intercom *</label>
-                        <input type="text" class="form-control @error('intercom') is-invalid @enderror" 
-                               id="intercom" name="intercom" value="{{ old('intercom', $complaint->intercom) }}" required>
-                        @error('intercom')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <!-- Status -->
+                    <!-- Status (Full Width) -->
                     <div class="mb-3">
                         <label for="status" class="form-label">Status *</label>
-                        <select class="form-select @error('status') is-invalid @enderror" 
-                                id="status" name="status" required>
+                        <select class="form-select @error('status') is-invalid @enderror"
+                            id="status" name="status" required>
                             <option value="pending" {{ old('status', $complaint->status) == 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="assigned" {{ old('status', $complaint->status) == 'assigned' ? 'selected' : '' }}>Assigned</option>
                             <option value="in_progress" {{ old('status', $complaint->status) == 'in_progress' ? 'selected' : '' }}>In Progress</option>
@@ -142,7 +156,7 @@
                             <option value="closed" {{ old('status', $complaint->status) == 'closed' ? 'selected' : '' }}>Closed</option>
                         </select>
                         @error('status')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -151,6 +165,7 @@
             </div>
         </div>
     </div>
+
 
     <div class="col-md-4">
         <div class="card mb-4">
@@ -172,8 +187,8 @@
                     <dd class="col-sm-8">{{ $complaint->updated_at->format('M d, Y H:i') }}</dd>
 
                     @if($complaint->assignedTo)
-                        <dt class="col-sm-4">Assigned To</dt>
-                        <dd class="col-sm-8">{{ $complaint->assignedTo->full_name }}</dd>
+                    <dt class="col-sm-4">Assigned To</dt>
+                    <dd class="col-sm-8">{{ $complaint->assignedTo->full_name }}</dd>
                     @endif
                 </dl>
             </div>

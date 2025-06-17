@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Complaint;
 use App\Models\User;
 use App\Models\ComplaintAction;
+use App\Models\NetworkType;
+use App\Models\Section;
+use App\Models\Vertical;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -28,67 +31,73 @@ class ComplaintController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $query = Complaint::query();
+        $query = Complaint::query()->with(['client', 'assignedTo', 'networkType', 'vertical']); // Added more relationships
 
         if ($user) {
             if ($user->isManager()) {
-                // Managers can see all complaints
                 $query->whereIn('status', ['pending', 'assigned', 'in_progress']);
             } elseif ($user->isVM()) {
-                // VMs can see all complaints
-                // No additional where clause needed
+                // VMs see all complaints - no filter needed
             } elseif ($user->isNFO()) {
-                // NFOs can see complaints assigned to them
-                $query->where('assigned_to', $user->id);
+                $query->where('assigned_to', $user->id)
+                    ->orWhere('status', 'pending'); // Allow NFOs to see pending tickets they can claim
             } else {
-                // Regular users can only see their own complaints
                 $query->where('client_id', $user->id);
             }
         }
 
-        $complaints = $query->with(['client', 'assignedTo'])
-            ->latest()
-            ->paginate(10);
+        // Add search/sort functionality
+        if (request()->has('search')) {
+            $query->where('reference_number', 'like', '%' . request('search') . '%')
+                ->orWhere('description', 'like', '%' . request('search') . '%');
+        }
+
+        if (request()->has('status')) {
+            $query->where('status', request('status'));
+        }
+
+        $complaints = $query->latest()->paginate(10);
 
         return view('complaints.index', compact('complaints'));
     }
 
     public function create()
     {
-        return view('complaints.create');
+        $networkTypes = NetworkType::all();
+        $verticals = Vertical::all();
+        $sections = Section::all();
+
+        return view('complaints.create', compact('networkTypes', 'verticals', 'sections'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'network_type' => 'required|string|max:255',
+            'network_type_id' => 'required|exists:network_types,id',
             'priority' => 'required|in:low,medium,high',
             'description' => 'required|string',
-            'vertical' => 'required|string|max:255',
+            'vertical_id' => 'required|exists:verticals,id',
             'user_name' => 'required|string|max:255',
-            'file' => 'nullable|file|max:2048', // 2MB max
-            'section' => 'required|string|max:255',
+            'file' => 'nullable|file|max:2048',
+            'section_id' => 'required|exists:sections,id',
             'intercom' => 'required|string|max:255',
         ]);
-
-        // Handle file upload
-        $filePath = null;
-        if ($request->hasFile('file')) {
-            $filePath = $request->file('file')->store('complaint_files');
-        }
 
         $complaint = Complaint::create([
             'reference_number' => 'CMP-' . date('Ymd') . '-' . strtoupper(Str::random(4)),
             'client_id' => auth()->user()->id ?? 0,
-            'network_type' => $validated['network_type'],
-            'priority' => $validated['priority'],
             'description' => $validated['description'],
-            'vertical' => $validated['vertical'],
+            'priority' => $validated['priority'],
+            'status' => 'pending',
+            'network_type_id' => $validated['network_type_id'],
+            'vertical_id' => $validated['vertical_id'],
+            'section_id' => $validated['section_id'],
             'user_name' => $validated['user_name'],
-            'file_path' => $filePath,
-            'section' => $validated['section'],
+            'file_path' => $request->hasFile('file') ? $request->file('file')->store('complaint_files', 'public') : null,
             'intercom' => $validated['intercom'],
-            'status' => 'pending'
+            'network_type' => NetworkType::find($validated['network_type_id'])->name,
+            'vertical' => Vertical::find($validated['vertical_id'])->name,
+            'section' => Section::find($validated['section_id'])->name
         ]);
 
         // Create initial action record
@@ -96,45 +105,51 @@ class ComplaintController extends Controller
             'complaint_id' => $complaint->id,
             'user_id' => auth()->user()->id ?? 0,
             'action' => 'created',
-            'description' => 'Complaint created'
+            'description' => 'Complaint created',
+            'changes' => json_encode($complaint->getChanges())
         ]);
 
         return redirect()->route('complaints.show', $complaint)
             ->with('success', 'Complaint created successfully.');
     }
 
-    public function show(Complaint $complaint)
-    {
-        $complaint->load(['client', 'assignedTo', 'actions.user']);
-        return view('complaints.show', compact('complaint'));
-    }
-
     public function edit(Complaint $complaint)
     {
         $this->authorize('update', $complaint);
+
+        $networkTypes = NetworkType::all();
+        $verticals = Vertical::all();
+        $sections = Section::all();
+
         $complaint->load(['client', 'assignedTo']);
-        return view('complaints.edit', compact('complaint'));
+
+        return view('complaints.edit', compact('complaint', 'networkTypes', 'verticals', 'sections'));
     }
+
+
 
     public function update(Request $request, Complaint $complaint)
     {
-        \Log::info("Update method triggered for complaint #{$complaint->id}");
-        \Log::info("Request data:", $request->all());
-
         $this->authorize('update', $complaint);
 
         $validated = $request->validate([
-            'network_type' => 'required|string|max:255',
+            'network_type_id' => 'required|exists:network_types,id',
             'description' => 'required|string',
-            'vertical' => 'required|string|max:255',
+            'vertical_id' => 'required|exists:verticals,id',
             'user_name' => 'required|string|max:255',
-            'section' => 'required|string|max:255',
+            'section_id' => 'required|exists:sections,id',
             'intercom' => 'required|string|max:255',
             'priority' => 'required|in:low,medium,high',
             'status' => 'required|in:pending,assigned,in_progress,resolved,closed',
-            'file' => 'nullable|file|max:2048'
+            'file' => 'nullable|file|max:2048',
+            'delete_file' => 'sometimes|boolean'
         ]);
 
+        // Handle file deletion
+        if ($request->input('delete_file') && $complaint->file_path) {
+            Storage::delete($complaint->file_path);
+            $validated['file_path'] = null;
+        }
 
         // Handle file upload if new file is provided
         if ($request->hasFile('file')) {
@@ -142,21 +157,25 @@ class ComplaintController extends Controller
             if ($complaint->file_path) {
                 Storage::delete($complaint->file_path);
             }
-            $validated['file_path'] = $request->file('file')->store('complaint_files');
+            $validated['file_path'] = $request->file('file')->store('complaint_files', 'public');
         }
+
         $complaint->update($validated);
 
         // Create action record
         ComplaintAction::create([
             'complaint_id' => $complaint->id,
-            'user_id' =>  auth()->user()->id ?? 0,
+            'user_id' => auth()->user()->id ?? 0,
             'action' => 'updated',
-            'description' => 'Complaint updated'
+            'description' => 'Complaint updated',
+            'changes' => json_encode($complaint->getChanges())
         ]);
 
-        return redirect()->route('complaints.show', $complaint)
+        return redirect()->route('complaints.index') // or another existing route
             ->with('success', 'Complaint updated successfully.');
     }
+
+
 
     public function assign(Request $request, Complaint $complaint)
     {
@@ -201,8 +220,8 @@ class ComplaintController extends Controller
             'description' => $validated['description']
         ]);
 
-        return redirect()->route('complaints.show', $complaint)
-            ->with('success', 'Complaint assigned successfully.');
+        return redirect()->route('complaints.index') // or another existing route
+            ->with('success', 'Complaint updated successfully.');
     }
 
     public function resolve(Request $request, Complaint $complaint)
@@ -330,5 +349,13 @@ class ComplaintController extends Controller
         $usersList = \App\Models\User::select('username')->distinct()->pluck('username');
 
         return view('complaints.history', compact('complaints', 'actionsList', 'usersList'));
+    }
+
+
+    public function show(Complaint $complaint)
+    {
+        $complaint->load(['client', 'assignedTo', 'actions.user', 'networkType', 'vertical', 'section']);
+
+        return view('complaints.show', compact('complaint'));
     }
 }

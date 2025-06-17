@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Complaint extends Model
 {
@@ -12,30 +13,27 @@ class Complaint extends Model
     protected $fillable = [
         'reference_number',
         'client_id',
-        'network_type',
         'priority',
         'description',
-        'vertical',
         'user_name',
         'file_path',
-        'section',
         'intercom',
         'status',
         'assigned_to',
-        'resolution'
+        'resolution',
+        'network_type_id',
+        'vertical_id',
+        'section_id',
     ];
 
     protected $casts = [
         'priority' => 'string',
         'status' => 'string',
-        'network_type' => 'string',
-        'vertical' => 'string',
     ];
 
-    
+    protected $appends = ['status_color', 'priority_color', 'network_type', 'vertical', 'section'];
 
-    protected $appends = ['status_color', 'priority_color'];
-
+    // Relationships
     public function client()
     {
         return $this->belongsTo(User::class, 'client_id');
@@ -48,9 +46,25 @@ class Complaint extends Model
 
     public function actions()
     {
-        return $this->hasMany(ComplaintAction::class);
+        return $this->hasMany(ComplaintAction::class)->orderBy('created_at', 'desc');
     }
 
+    public function networkType()
+    {
+        return $this->belongsTo(NetworkType::class);
+    }
+
+    public function vertical()
+    {
+        return $this->belongsTo(Vertical::class);
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
+    }
+
+    // Status Check Methods
     public function isPending()
     {
         return $this->status === 'pending';
@@ -81,9 +95,10 @@ class Complaint extends Model
         return $this->status === 'closed';
     }
 
+    // Accessors
     public function getStatusColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'warning',
             'assigned' => 'info',
             'in_progress' => 'primary',
@@ -96,11 +111,28 @@ class Complaint extends Model
 
     public function getPriorityColorAttribute()
     {
-        return match($this->priority) {
+        return match ($this->priority) {
             'low' => 'info',
             'medium' => 'warning',
             'high' => 'danger',
             default => 'secondary',
         };
+    }
+
+
+    // Helper Methods
+    public function canBeAssigned()
+    {
+        return $this->isPending() || $this->isAssigned();
+    }
+
+    public function canBeResolved()
+    {
+        return $this->isAssigned() || $this->isInProgress();
+    }
+
+    public function canBeClosed()
+    {
+        return $this->isResolved();
     }
 }
