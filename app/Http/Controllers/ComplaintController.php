@@ -32,27 +32,35 @@ class ComplaintController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $query = Complaint::query()->with(['client', 'assignedTo', 'networkType', 'vertical']); // Added more relationships
+
+        $query = Complaint::query()->with(['client', 'assignedTo', 'networkType', 'vertical']);
 
         if ($user) {
             if ($user->isManager()) {
+                // Manager: See all active complaints
                 $query->whereIn('status', ['pending', 'assigned', 'in_progress']);
             } elseif ($user->isVM()) {
-                // VMs see all complaints - no filter needed
+                // VM: Only complaints matching user's vertical
+                $query->where('vertical_id', $user->vertical_id);
             } elseif ($user->isNFO()) {
-                $query->where('assigned_to', $user->id)
-                    ->orWhere('status', 'pending'); // Allow NFOs to see pending tickets they can claim
+                // NFO: Only complaints assigned to them
+                $query->where('assigned_to', $user->id);
             } else {
+                // Client: Only their own complaints
                 $query->where('client_id', $user->id);
             }
         }
 
-        // Add search/sort functionality
+        // Search functionality
         if (request()->has('search')) {
-            $query->where('reference_number', 'like', '%' . request('search') . '%')
-                ->orWhere('description', 'like', '%' . request('search') . '%');
+            $search = request('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('reference_number', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
         }
 
+        // Status filter
         if (request()->has('status')) {
             $query->where('status', request('status'));
         }
@@ -61,6 +69,7 @@ class ComplaintController extends Controller
 
         return view('complaints.index', compact('complaints'));
     }
+
 
     public function create()
     {
