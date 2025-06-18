@@ -14,9 +14,9 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
 
-      protected $primaryKey = 'id';
+    protected $primaryKey = 'id';
 
-      
+
     // Role constants
     const ROLE_ADMIN = 'admin';
     const ROLE_MANAGER = 'manager';
@@ -30,13 +30,12 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-         'username',
-        'password', 
+        'username',
+        'password',
         'full_name',
-        'email',
-        'mobile',
         'address',
-        'role'
+        'role',
+        'vertical_id'
     ];
 
     /**
@@ -156,15 +155,15 @@ class User extends Authenticatable
             $query->whereIn('role', [self::ROLE_VM, self::ROLE_NFO]);
         } elseif ($this->isVM()) {
             // VMs can self-assign or assign to NFOs
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->where('id', $this->id)
-                  ->orWhere('role', self::ROLE_NFO);
+                    ->orWhere('role', self::ROLE_NFO);
             });
         } elseif ($this->isNFO()) {
             // NFOs can assign to other NFOs or VMs
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->where('role', self::ROLE_NFO)
-                  ->orWhere('role', self::ROLE_VM);
+                    ->orWhere('role', self::ROLE_VM);
             })->where('id', '!=', $this->id);
         }
 

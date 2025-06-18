@@ -17,7 +17,7 @@
             Guest User
             @endif
             &nbsp;|&nbsp;
-            <i class="bi bi-clock"></i> {{ $action->created_at->format('M d, Y H:i') }}
+            <i class="bi bi-clock"></i> {{ $action->created_at->format('M d, Y h:i A') }}
           </div>
           <div>{{ $action->description }}</div>
           @if($action->action === 'resolved' && $action->resolution)

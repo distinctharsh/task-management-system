@@ -68,8 +68,8 @@
                         <div class="col-md-6">
                             <p class="mb-1 fw-semibold"><i class="bi bi-calendar"></i> Created At:</p>
                             <p class="mb-3 ps-3">
-                                {{ $complaint->created_at->format('M d, Y H:i') }}
-                                <small class="text-muted d-block">({{ $complaint->created_at->diffForHumans() }})</small>
+                                {{ $complaint->created_at->format('M d, Y h:i A') }}
+                                <small class="text-muted d-block">({{ $complaint->created_at->diffForHumans() }} ({{ $complaint->created_at->format('h:i A') }}) )</small>
                             </p>
 
                             <p class="mb-1 fw-semibold"><i class="bi bi-layers"></i> Vertical:</p>
@@ -105,7 +105,7 @@
                             <p class="mb-1 fw-semibold"><i class="bi bi-clock-history"></i> Last Updated:</p>
                             <p class="ps-3">
                                 {{ $complaint->updated_at->format('M d, Y H:i') }}
-                                <small class="text-muted d-block">({{ $complaint->updated_at->diffForHumans() }})</small>
+                                <small class="text-muted d-block">({{ $complaint->updated_at->diffForHumans() }} ({{ $complaint->updated_at->format('h:i A') }}) )</small>
                             </p>
                         </div>
                         <div class="col-md-6">
@@ -156,7 +156,9 @@
                         <dd class="col-sm-7">{{ $complaint->intercom }}</dd>
 
                         <dt class="col-sm-5"><i class="bi bi-calendar"></i> Created:</dt>
-                        <dd class="col-sm-7">{{ $complaint->created_at->diffForHumans() }}</dd>
+                        <dd class="col-sm-7">
+                            {{ $complaint->created_at->diffForHumans() }} ({{ $complaint->created_at->format('h:i A') }})
+                        </dd>
                     </dl>
                 </div>
             </div>
@@ -210,40 +212,5 @@
 </script>
 @endpush
 
-@push('styles')
-<style>
-    .timeline {
-        position: relative;
-        padding-left: 1.5rem;
-        border-left: 2px solid #e9ecef;
-    }
 
-    .timeline-item {
-        position: relative;
-        padding-bottom: 1.5rem;
-    }
-
-    .timeline-item:last-child {
-        padding-bottom: 0;
-    }
-
-    .timeline-marker {
-        position: absolute;
-        left: -0.5rem;
-        top: 0.25rem;
-        width: 1rem;
-        height: 1rem;
-        border-radius: 50%;
-        border: 2px solid #fff;
-    }
-
-    .card-header {
-        background-color: #f8f9fa;
-    }
-
-    .ps-3 {
-        padding-left: 1rem !important;
-    }
-</style>
-@endpush
 @endsection

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Vertical;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -30,7 +31,7 @@ class AuthController extends Controller
         }
 
         $credentials = $request->only('username', 'password');
-        
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->intended('dashboard');
@@ -43,19 +44,19 @@ class AuthController extends Controller
 
     public function showRegisterForm()
     {
-        return view('auth.register');
+        $verticals = Vertical::all();
+        return view('auth.register', compact('verticals'));
     }
 
-   public function register(Request $request)
+    public function register(Request $request)
     {
         // Validate the request
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string|max:50|unique:users',
-            'full_name' => 'required|string|max:100',
-            'email' => 'required|email|max:100|unique:users',
-            'mobile' => 'required|string|max:20',
-            'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:admin,manager,vm,nfo,client',
+            'username'     => 'required|string|max:50|unique:users',
+            'full_name'    => 'required|string|max:100',
+            'password'     => 'required|string|min:6|confirmed',
+            'role'         => 'required|in:admin,manager,vm,nfo,client',
+            'vertical_id'  => 'nullable|exists:verticals,id', // Nullable if it's not required
         ]);
 
         // Check if validation fails
@@ -67,12 +68,11 @@ class AuthController extends Controller
 
         // Create the user
         $user = User::create([
-            'username' => $request->username,
-            'full_name' => $request->full_name,
-            'email' => $request->email,
-            'mobile' => $request->mobile,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'username'    => $request->username,
+            'full_name'   => $request->full_name,
+            'password'    => Hash::make($request->password),
+            'role'        => $request->role,
+            'vertical_id' => $request->vertical_id,
         ]);
 
         // Log the user in
@@ -82,6 +82,7 @@ class AuthController extends Controller
         return redirect()->intended('dashboard')
             ->with('success', 'Registration successful!');
     }
+
     public function logout(Request $request)
     {
         Auth::logout();

@@ -6,7 +6,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Complaint History</h4>
+                    <h4 class="mb-0">Ticket History</h4>
                     <a href="{{ route('complaints.index') }}" class="btn btn-secondary">Back to Tickets</a>
                 </div>
                 <div class="card-body">
@@ -19,7 +19,7 @@
                                 <select name="action" class="form-select">
                                     <option value="">All Actions</option>
                                     @foreach($actionsList as $action)
-                                        <option value="{{ $action }}" {{ request('action') == $action ? 'selected' : '' }}>{{ ucfirst($action) }}</option>
+                                    <option value="{{ $action }}" {{ request('action') == $action ? 'selected' : '' }}>{{ ucfirst($action) }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -27,7 +27,7 @@
                                 <select name="by" class="form-select">
                                     <option value="">All Recent Action By</option>
                                     @foreach($usersList as $user)
-                                        <option value="{{ $user }}" {{ request('by') == $user ? 'selected' : '' }}>{{ $user }}</option>
+                                    <option value="{{ $user }}" {{ request('by') == $user ? 'selected' : '' }}>{{ $user }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -56,21 +56,21 @@
                             </thead>
                             <tbody>
                                 @foreach($complaints as $complaint)
-                                    @php $latestAction = $complaint->actions->first(); @endphp
-                                    <tr>
-                                        <td>
-                                            <a href="{{ route('complaints.show', $complaint) }}">
-                                                {{ $complaint->reference_number }}
-                                            </a>
-                                        </td>
-                                        <td>{{ $latestAction?->action ?? '-' }}</td>
-                                        <td>{{ $latestAction?->user?->full_name ?? $latestAction?->user?->username ?? '-' }}</td>
-                                        <td>{{ $latestAction?->created_at ? $latestAction->created_at->format('M d, Y H:i') : '-' }}</td>
-                                        <td>{{ $latestAction?->description ?? '-' }}</td>
-                                        <td>
-                                            <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-sm btn-primary">View</a>
-                                        </td>
-                                    </tr>
+                                @php $latestAction = $complaint->actions->first(); @endphp
+                                <tr>
+                                    <td>
+                                        <a>
+                                            {{ $complaint->reference_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ $latestAction?->action ?? '-' }}</td>
+                                    <td>{{ $latestAction?->user?->full_name ?? $latestAction?->user?->username ?? '-' }}</td>
+                                    <td>{{ $latestAction?->created_at ? $latestAction->created_at->format('M d, Y H:i') : '-' }}</td>
+                                    <td>{{ $latestAction?->description ?? '-' }}</td>
+                                    <td>
+                                        <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-sm btn-primary">View</a>
+                                    </td>
+                                </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -83,4 +83,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

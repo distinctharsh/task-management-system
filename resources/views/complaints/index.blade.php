@@ -202,7 +202,7 @@
                 </div>
 
                 <div class="d-flex justify-content-center mt-4">
-                    {{ $complaints->links() }}
+                    {{ $complaints->links('vendor.pagination.custom') }} <!-- Your custom view -->
                 </div>
             </div>
         </div>

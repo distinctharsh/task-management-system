@@ -8,6 +8,7 @@ use App\Models\ComplaintAction;
 use App\Models\NetworkType;
 use App\Models\Section;
 use App\Models\Vertical;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -83,8 +84,13 @@ class ComplaintController extends Controller
             'intercom' => 'required|string|max:255',
         ]);
 
+        // 🔢 Generate CMP-YYYYMMDD### reference number
+        $date = Carbon::now()->format('Ymd');
+        $complaintsToday = Complaint::whereDate('created_at', Carbon::today())->count();
+        $referenceNumber = 'CMP-' . $date . str_pad($complaintsToday + 1, 3, '0', STR_PAD_LEFT);
+
         $complaint = Complaint::create([
-            'reference_number' => 'CMP-' . date('Ymd') . '-' . strtoupper(Str::random(4)),
+            'reference_number' => $referenceNumber,
             'client_id' => auth()->user()->id ?? 0,
             'description' => $validated['description'],
             'priority' => $validated['priority'],
@@ -97,7 +103,9 @@ class ComplaintController extends Controller
             'intercom' => $validated['intercom'],
             'network_type' => NetworkType::find($validated['network_type_id'])->name,
             'vertical' => Vertical::find($validated['vertical_id'])->name,
-            'section' => Section::find($validated['section_id'])->name
+            'section' => Section::find($validated['section_id'])->name,
+            'created_at' => Carbon::now()->setTimezone(config('app.timezone')),
+            'updated_at' => Carbon::now()->setTimezone(config('app.timezone')),
         ]);
 
         // Create initial action record

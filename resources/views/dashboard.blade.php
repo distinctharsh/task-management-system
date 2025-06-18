@@ -98,11 +98,17 @@
                                                             {{ $complaint->status }}
                                                         </span>
                                                     </td>
+                                                    @php
+
+                                                    $textColor = $complaint->priority_color === 'warning' ? 'text-dark' : 'text-white';
+                                                    @endphp
+
                                                     <td>
-                                                        <span class="badge bg-{{ $complaint->priority_color }}">
+                                                        <span class="badge bg-{{ $complaint->priority_color }} {{ $textColor }}">
                                                             {{ $complaint->priority }}
                                                         </span>
                                                     </td>
+
                                                     <td>{{ $complaint->client?->full_name ?? 'Guest User' }}</td>
                                                     <td>{{ $complaint->created_at->format('M d, Y H:i') }}</td>
                                                     <td>
