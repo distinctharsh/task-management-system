@@ -67,13 +67,26 @@
 
                                         @auth
                                         @if(auth()->user()->isManager())
-                                        @if($complaint->status === 'pending')
+                                        {{-- @if($complaint->status === 'pending')
                                         <button type="button" class="btn btn-sm btn-primary"
                                             data-bs-toggle="modal"
                                             data-bs-target="#assignModal{{ $complaint->id }}">
                                             Assign
                                         </button>
+                                        @endif --}}
+
+                                        @if(auth()->user()->isManager())
+                                            <button type="button" class="btn btn-sm btn-primary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#assignModal{{ $complaint->id }}">
+                                                @if($complaint->assigned_to)
+                                                    Reassign
+                                                @else
+                                                    Assign
+                                                @endif
+                                            </button>
                                         @endif
+
                                         @elseif(auth()->user()->isVM())
                                         @if($complaint->status === 'pending' || $complaint->assigned_to === auth()->user()->id)
                                         <button type="button" class="btn btn-sm btn-primary"

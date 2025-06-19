@@ -32,7 +32,9 @@ class Complaint extends Model
         'status' => 'string',
     ];
 
-    protected $appends = ['status_color', 'priority_color', 'network_type', 'vertical', 'section'];
+    // protected $appends = ['status_color', 'priority_color', 'network_type', 'vertical', 'section'];
+    protected $appends = ['status_color', 'priority_color'];
+
 
     // Relationships
     public function client()

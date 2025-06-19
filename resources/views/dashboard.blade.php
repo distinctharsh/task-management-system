@@ -61,6 +61,16 @@
                                 </div>
                             </div>
                         </div>
+                        @if(auth()->user()->isManager())
+                            <div class="col-md-3">
+                                <div class="card bg-dark text-white mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">In Reverted</h5>
+                                        <h2 class="mb-0">{{ $inRevertedComplaints }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Recent Complaints (from controller variables) -->
@@ -113,9 +123,14 @@
                                                     <td>{{ $complaint->created_at->format('M d, Y H:i') }}</td>
                                                     <td>
                                                         <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-sm btn-info">View</a>
-                                                        @can('update', $complaint)
-                                                        <a href="{{ route('complaints.edit', $complaint) }}" class="btn btn-sm btn-primary">Edit</a>
-                                                        @endcan
+                                                        
+                                                        @auth
+                                                            @if(auth()->user()->isManager())
+                                                                @can('update', $complaint)
+                                                                    <a href="{{ route('complaints.edit', $complaint) }}" class="btn btn-sm btn-primary">Edit</a>
+                                                                @endcan
+                                                            @endif
+                                                        @endauth
                                                     </td>
                                                 </tr>
                                                 @empty

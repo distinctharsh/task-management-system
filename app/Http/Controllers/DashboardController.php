@@ -44,6 +44,7 @@ class DashboardController extends Controller
                 'pendingComplaints' => (clone $baseQuery)->where('status', 'pending')->count(),
                 'resolvedComplaints' => (clone $baseQuery)->where('status', 'resolved')->count(),
                 'inProgressComplaints' => (clone $baseQuery)->where('status', 'in_progress')->count(),
+                'inRevertedComplaints' => (clone $baseQuery)->where('status', 'reverted')->count(),
                 'recentComplaints' => (clone $baseQuery)->with(['client', 'networkType', 'vertical'])
                     ->latest()
                     ->take(5)
@@ -58,6 +59,7 @@ class DashboardController extends Controller
                 'pendingComplaints' => 0,
                 'resolvedComplaints' => 0,
                 'inProgressComplaints' => 0,
+                'inRevertedComplaints' => 0,
                 'recentComplaints' => collect()
             ])->with('error', 'There was an error loading the dashboard. Please try again.');
         }

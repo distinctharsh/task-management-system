@@ -15,7 +15,8 @@
 
     <!-- Styles -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
 
     <style>
         body {
@@ -95,7 +96,8 @@
     <section class="hero-section">
         <div class="container text-center">
             <h1 class="display-4 mb-4">Welcome to Ticket Management System</h1>
-            <img src="{{ asset('images/flow-diagram.png') }}" alt="Work Flow" class="img-fluid mb-4" style="max-height: 300px;">
+            <img src="{{ asset('images/flow-diagram.png') }}" alt="Work Flow" class="img-fluid mb-4 d-block mx-auto" style="max-height: 300px;">
+
             <p class="lead mb-4">Generate your ticket and track their progress easily</p>
             <div class="d-flex justify-content-center gap-3">
                 <a href="{{ route('complaints.create') }}" class="btn btn-light btn-lg">Create Ticket</a>

@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('complaint_actions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('complaint_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('user_id')->default(0);
             $table->string('action');
             $table->text('description');
             $table->timestamps();

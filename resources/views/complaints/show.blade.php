@@ -42,9 +42,14 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Complaint Details</h5>
+                    @auth
+                                                            @if(auth()->user()->isManager())
                     <a href="{{ route('complaints.edit', $complaint) }}" class="btn btn-sm btn-outline-primary">
                         <i class="bi bi-pencil"></i> Edit
                     </a>
+
+                        @endif
+                                                        @endauth
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
@@ -128,6 +133,47 @@
         <div class="col-lg-4">
             <!-- Assignment Card -->
             @include('complaints.partials.assignment-card')
+
+
+                     <!-- Comments Card -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Comments</h5>
+                </div>
+                <div class="card-body">
+                    @auth
+                        <form action="{{ route('complaints.comment', $complaint) }}" method="POST" class="mb-4">
+                            @csrf
+                            <div class="mb-3">
+                                <textarea name="comment" class="form-control" rows="3" placeholder="Add a comment..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Comment</button>
+                        </form>
+                    @endauth
+
+                    <div class="comments">
+                        @forelse($complaint->comments ?? [] as $comment)
+                            <div class="comment mb-3 p-2 border rounded bg-light">
+                                <div class="d-flex align-items-center mb-1">
+                                    <div class="avatar bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 1rem;">
+                                        {{ substr($comment->user->full_name, 0, 1) }}
+                                    </div>
+                                    <div class="ms-2">
+                                        <strong>{{ $comment->user->full_name }}</strong>
+                                        <span class="text-muted small">&nbsp;{{ $comment->created_at->format('M d, Y H:i') }}</span>
+                                    </div>
+                                </div>
+                                <div>{{ $comment->comment }}</div>
+                            </div>
+                        @empty
+                            <p class="text-muted">No comments yet.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+
+            
 
             <!-- Quick Details Card -->
             <div class="card shadow-sm mb-4">

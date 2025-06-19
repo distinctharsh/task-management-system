@@ -38,7 +38,7 @@ class ComplaintController extends Controller
         if ($user) {
             if ($user->isManager()) {
                 // Manager: See all active complaints
-                $query->whereIn('status', ['pending', 'assigned', 'in_progress']);
+                $query->whereIn('status', ['pending', 'assigned', 'in_progress', 'reverted']);
             } elseif ($user->isVM()) {
                 // VM: Only complaints matching user's vertical
                 $query->where('vertical_id', $user->vertical_id);
