@@ -65,9 +65,10 @@ class ComplaintController extends Controller
             $query->where('status', request('status'));
         }
 
+        $managers = User::where('role', 'manager')->get();
         $complaints = $query->latest()->paginate(10);
 
-        return view('complaints.index', compact('complaints'));
+        return view('complaints.index', compact('complaints', 'managers'));
     }
 
 
@@ -159,7 +160,8 @@ class ComplaintController extends Controller
             'priority' => 'required|in:low,medium,high',
             'status' => 'required|in:pending,assigned,in_progress,resolved,closed',
             'file' => 'nullable|file|max:2048',
-            'delete_file' => 'sometimes|boolean'
+            'delete_file' => 'sometimes|boolean',
+            'assigned_to' => 'nullable|exists:users,id',
         ]);
 
         // Handle file deletion
@@ -175,6 +177,11 @@ class ComplaintController extends Controller
                 Storage::delete($complaint->file_path);
             }
             $validated['file_path'] = $request->file('file')->store('complaint_files', 'public');
+        }
+
+        // Check if assigned_to is being changed
+        if (isset($validated['assigned_to']) && $validated['assigned_to'] != $complaint->assigned_to) {
+            $validated['assigned_by'] = auth()->user()->id ?? 0;
         }
 
         $complaint->update($validated);
@@ -288,12 +295,14 @@ class ComplaintController extends Controller
         }
 
         $validated = $request->validate([
+            'assigned_to' => 'required|exists:users,id',
             'description' => 'required|string'
         ]);
 
         $complaint->update([
-            'assigned_to' => null,
-            'status' => 'pending'
+            'assigned_to' => $validated['assigned_to'],
+            'status' => 'reverted',
+            'assigned_by' => $user->id
         ]);
 
         // Create action record
@@ -317,7 +326,7 @@ class ComplaintController extends Controller
             $complaint = Complaint::find($request->complaint_id);
         }
 
-        $assignableUsers = $user->getAssignableUsers();
+        $assignableUsers = $user->getAssignableUsers($complaint); // Pass complaint
 
         return response()->json($assignableUsers);
     }

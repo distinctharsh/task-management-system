@@ -32,8 +32,6 @@ class UserController extends Controller
             'username' => 'required|string|max:50|unique:users',
             'password' => 'required|string|min:6|confirmed',
             'full_name' => 'required|string|max:100',
-            'email' => 'required|string|email|max:100|unique:users',
-            'mobile' => 'required|string|max:20',
             'address' => 'nullable|string',
             'role' => ['required', Rule::in(['admin', 'manager', 'vm', 'nfo', 'client'])],
         ]);
@@ -42,8 +40,6 @@ class UserController extends Controller
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'full_name' => $request->full_name,
-            'email' => $request->email,
-            'mobile' => $request->mobile,
             'address' => $request->address,
             'role' => $request->role,
         ]);
@@ -63,8 +59,6 @@ class UserController extends Controller
             'username' => ['required', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:6|confirmed',
             'full_name' => 'required|string|max:100',
-            'email' => ['required', 'string', 'email', 'max:100', Rule::unique('users')->ignore($user->id)],
-            'mobile' => 'required|string|max:20',
             'address' => 'nullable|string',
             'role' => ['required', Rule::in(['admin', 'manager', 'vm', 'nfo', 'client'])],
         ]);

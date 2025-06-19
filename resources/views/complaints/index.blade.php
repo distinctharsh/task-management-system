@@ -178,6 +178,19 @@
                                                     </div>
                                                     <div class="modal-body">
                                                         <div class="mb-3">
+                                                            <label for="assigned_to" class="form-label">Revert to Manager</label>
+                                                            <select class="form-select" name="assigned_to" required>
+                                                                <option value="">Select Manager</option>
+                                                                @foreach($managers as $manager)
+                                                                <option value="{{ $manager->id }}"
+                                                                    @if($manager->id == $complaint->assigned_by) selected @endif>
+                                                                    {{ $manager->full_name }}
+                                                                    @if($manager->id == $complaint->assigned_by) (Original Assigner) @endif
+                                                                </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-3">
                                                             <label for="description" class="form-label">Reason for Reverting</label>
                                                             <textarea class="form-control" name="description" rows="3" required></textarea>
                                                         </div>

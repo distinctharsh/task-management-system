@@ -13,42 +13,42 @@ class DashboardController extends Controller
     {
         try {
             $user = auth()->user();
-            
-            // Initialize variables with default values
-            $data = [
-                'totalComplaints' => 0,
-                'pendingComplaints' => 0,
-                'resolvedComplaints' => 0,
-                'inProgressComplaints' => 0,
-                'recentComplaints' => collect()
-            ];
 
+            // Base query builder (dynamic banayenge role ke hisaab se)
+            $baseQuery = Complaint::query();
+
+            // Manager: no filter
             if ($user->isManager()) {
-                $data['totalComplaints'] = Complaint::count();
-                $data['pendingComplaints'] = Complaint::where('status', 'pending')->count();
-                $data['resolvedComplaints'] = Complaint::where('status', 'resolved')->count();
-                $data['inProgressComplaints'] = Complaint::where('status', 'in_progress')->count();
-                $data['recentComplaints'] = Complaint::with('client')
-                    ->latest()
-                    ->take(5)
-                    ->get();
-            } else {
-                $data['totalComplaints'] = Complaint::where('client_id', $user->id)->count();
-                $data['pendingComplaints'] = Complaint::where('client_id', $user->id)
-                    ->where('status', 'pending')
-                    ->count();
-                $data['resolvedComplaints'] = Complaint::where('client_id', $user->id)
-                    ->where('status', 'resolved')
-                    ->count();
-                $data['inProgressComplaints'] = Complaint::where('client_id', $user->id)
-                    ->where('status', 'in_progress')
-                    ->count();
-                $data['recentComplaints'] = Complaint::with('client')
-                    ->where('client_id', $user->id)
-                    ->latest()
-                    ->take(5)
-                    ->get();
+                // No need to modify $baseQuery
             }
+
+            // VM: Filter by vertical_id
+            elseif ($user->isVM()) {
+                $baseQuery->where('vertical_id', $user->vertical_id);
+            }
+
+            // NFO: Filter by vertical_id + assigned_to = user id
+            elseif ($user->isNFO()) {
+                $baseQuery->where('vertical_id', $user->vertical_id)
+                    ->where('assigned_to', $user->id);
+            }
+
+            // Client or Others: Filter by client_id
+            else {
+                $baseQuery->where('client_id', $user->id);
+            }
+
+            // Final data
+            $data = [
+                'totalComplaints' => (clone $baseQuery)->count(),
+                'pendingComplaints' => (clone $baseQuery)->where('status', 'pending')->count(),
+                'resolvedComplaints' => (clone $baseQuery)->where('status', 'resolved')->count(),
+                'inProgressComplaints' => (clone $baseQuery)->where('status', 'in_progress')->count(),
+                'recentComplaints' => (clone $baseQuery)->with(['client', 'networkType', 'vertical'])
+                    ->latest()
+                    ->take(5)
+                    ->get(),
+            ];
 
             return view('dashboard', $data);
         } catch (\Exception $e) {
@@ -65,22 +65,22 @@ class DashboardController extends Controller
 
 
 
-        public function getStatusColorAttribute()
-        {
-            return [
-                'pending' => 'warning',
-                'in_progress' => 'info',
-                'resolved' => 'success',
-                'rejected' => 'danger'
-            ][$this->status] ?? 'secondary';
-        }
+    public function getStatusColorAttribute()
+    {
+        return [
+            'pending' => 'warning',
+            'in_progress' => 'info',
+            'resolved' => 'success',
+            'rejected' => 'danger'
+        ][$this->status] ?? 'secondary';
+    }
 
-        public function getPriorityColorAttribute()
-        {
-            return [
-                'low' => 'info',
-                'medium' => 'warning',
-                'high' => 'danger'
-            ][$this->priority] ?? 'secondary';
-        }
+    public function getPriorityColorAttribute()
+    {
+        return [
+            'low' => 'info',
+            'medium' => 'warning',
+            'high' => 'danger'
+        ][$this->priority] ?? 'secondary';
+    }
 }

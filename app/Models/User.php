@@ -146,29 +146,49 @@ class User extends Authenticatable
     /**
      * Get users that can be assigned to complaints based on current user's role
      */
-    public function getAssignableUsers()
+    public function getAssignableUsers($complaint = null)
     {
         $query = User::query();
 
+        // MANAGER or ADMIN
         if ($this->isAdmin() || $this->isManager()) {
-            // Admins and Managers can assign to VMs or NFOs
             $query->whereIn('role', [self::ROLE_VM, self::ROLE_NFO]);
-        } elseif ($this->isVM()) {
-            // VMs can self-assign or assign to NFOs
+
+            // 💡 Additional filter: same vertical only if complaint is given
+            if ($complaint) {
+                $query->where('vertical_id', $complaint->vertical_id);
+            }
+        }
+
+        // VM
+        elseif ($this->isVM()) {
             $query->where(function ($q) {
-                $q->where('id', $this->id)
-                    ->orWhere('role', self::ROLE_NFO);
+                $q->where('id', $this->id) // self
+                    ->orWhere('role', self::ROLE_NFO); // or NFOs
             });
-        } elseif ($this->isNFO()) {
-            // NFOs can assign to other NFOs or VMs
+
+            // 💡 Vertical match only if complaint is given
+            if ($complaint) {
+                $query->where('vertical_id', $complaint->vertical_id);
+            }
+        }
+
+        // NFO
+        elseif ($this->isNFO()) {
             $query->where(function ($q) {
                 $q->where('role', self::ROLE_NFO)
                     ->orWhere('role', self::ROLE_VM);
-            })->where('id', '!=', $this->id);
+            })->where('id', '!=', $this->id); // exclude self
+
+            // 💡 Vertical match only if complaint is given
+            if ($complaint) {
+                $query->where('vertical_id', $complaint->vertical_id);
+            }
         }
 
-        return $query->get(['id', 'username', 'email', 'role']);
+        return $query->get(['id', 'username', 'full_name', 'role']);
     }
+
 
     public function getAuthIdentifierName()
     {

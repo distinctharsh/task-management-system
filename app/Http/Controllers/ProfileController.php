@@ -18,10 +18,9 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = Auth::user();
-        
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
         ]);
 
         $user->update($validated);
@@ -45,4 +44,4 @@ class ProfileController extends Controller
 
         return redirect('/');
     }
-} 
+}

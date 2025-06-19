@@ -20,6 +20,7 @@ class Complaint extends Model
         'intercom',
         'status',
         'assigned_to',
+        'assigned_by',
         'resolution',
         'network_type_id',
         'vertical_id',
