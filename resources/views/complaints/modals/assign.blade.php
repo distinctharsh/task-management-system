@@ -15,7 +15,7 @@
             </select>
           </div>
           <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
+            <label for="description" class="form-label">Remarks</label>
             <textarea class="form-control" name="description" rows="3" required></textarea>
           </div>
         </div>

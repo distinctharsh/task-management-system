@@ -138,4 +138,9 @@ class Complaint extends Model
     {
         return $this->isResolved();
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

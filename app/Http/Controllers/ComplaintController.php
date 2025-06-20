@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Comment;
 
 class ComplaintController extends Controller
 {
@@ -233,6 +234,7 @@ class ComplaintController extends Controller
 
         $complaint->update([
             'assigned_to' => $validated['assigned_to'],
+            'assigned_by' => auth()->user()->id ?? 0,
             'status' => 'assigned'
         ]);
 
@@ -383,5 +385,19 @@ class ComplaintController extends Controller
         $complaint->load(['client', 'assignedTo', 'actions.user', 'networkType', 'vertical', 'section']);
 
         return view('complaints.show', compact('complaint'));
+    }
+
+    public function comment(Request $request, Complaint $complaint)
+    {
+        $request->validate([
+            'comment' => 'required|string|max:2000',
+        ]);
+
+        $complaint->comments()->create([
+            'user_id' => auth()->user()->id ?? 0,
+            'comment' => $request->comment,
+        ]);
+
+        return redirect()->back()->with('success', 'Comment added successfully.');
     }
 }

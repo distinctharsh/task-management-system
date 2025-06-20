@@ -71,20 +71,20 @@
                                         <button type="button" class="btn btn-sm btn-primary"
                                             data-bs-toggle="modal"
                                             data-bs-target="#assignModal{{ $complaint->id }}">
-                                            Assign
+                                        Assign
                                         </button>
                                         @endif --}}
 
                                         @if(auth()->user()->isManager())
-                                            <button type="button" class="btn btn-sm btn-primary"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#assignModal{{ $complaint->id }}">
-                                                @if($complaint->assigned_to)
-                                                    Reassign
-                                                @else
-                                                    Assign
-                                                @endif
-                                            </button>
+                                        <button type="button" class="btn btn-sm btn-primary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#assignModal{{ $complaint->id }}">
+                                            @if($complaint->assigned_to)
+                                            Reassign
+                                            @else
+                                            Assign
+                                            @endif
+                                        </button>
                                         @endif
 
                                         @elseif(auth()->user()->isVM())
@@ -137,7 +137,7 @@
                                                             </select>
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label for="description" class="form-label">Description</label>
+                                                            <label for="description" class="form-label">Remarks</label>
                                                             <textarea class="form-control" name="description" rows="3" required></textarea>
                                                         </div>
                                                     </div>
