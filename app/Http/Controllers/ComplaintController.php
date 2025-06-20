@@ -263,26 +263,29 @@ class ComplaintController extends Controller
         }
 
         $validated = $request->validate([
-            'resolution' => 'required|string',
-            'description' => 'required|string'
+            'description' => 'required|string',
+            'status' => 'nullable|string|in:pending,assigned,in_progress,resolved',
+            'mark_closed' => 'nullable|boolean'
         ]);
+
+        $finalStatus = $request->has('mark_closed') ? 'closed' : $validated['status'];
 
         $complaint->update([
-            'status' => 'resolved',
-            'resolution' => $validated['resolution']
+            'status' => $finalStatus,
+            'resolution' => $validated['description'], // ✅ always store what user typed
         ]);
 
-        // Create action record
         ComplaintAction::create([
             'complaint_id' => $complaint->id,
             'user_id' => $user->id,
-            'action' => 'resolved',
+            'action' => $finalStatus,
             'description' => $validated['description']
         ]);
 
         return redirect()->route('complaints.show', $complaint)
-            ->with('success', 'Complaint resolved successfully.');
+            ->with('success', 'Complaint ' . $finalStatus . ' successfully.');
     }
+
 
     public function revert(Request $request, Complaint $complaint)
     {

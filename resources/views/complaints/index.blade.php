@@ -151,6 +151,7 @@
                                     </div>
 
                                     <!-- Resolve Modal -->
+                                    <!-- Resolve Modal -->
                                     <div class="modal fade" id="resolveModal{{ $complaint->id }}" tabindex="-1">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -161,12 +162,33 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <div class="mb-3">
-                                                            <label for="resolution" class="form-label">Resolution</label>
-                                                            <textarea class="form-control" name="resolution" rows="3" required></textarea>
+
+                                                        <!-- Closed Checkbox -->
+                                                        <div class="form-check mb-3">
+                                                            <input class="form-check-input" type="checkbox" value="1" id="markClosed{{ $complaint->id }}" name="mark_closed">
+                                                            <label class="form-check-label" for="markClosed{{ $complaint->id }}">
+                                                                Mark as Closed
+                                                            </label>
                                                         </div>
+
+                                                        <!-- Status Dropdown -->
                                                         <div class="mb-3">
-                                                            <label for="description" class="form-label">Description</label>
+                                                            <label for="status" class="form-label">Status *</label>
+                                                            <select class="form-select @error('status') is-invalid @enderror"
+                                                                id="statusSelect{{ $complaint->id }}" name="status" required>
+                                                                <option value="pending" {{ old('status', $complaint->status) == 'pending' ? 'selected' : '' }}>Pending</option>
+                                                                <option value="assigned" {{ old('status', $complaint->status) == 'assigned' ? 'selected' : '' }}>Assigned</option>
+                                                                <option value="in_progress" {{ old('status', $complaint->status) == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                                                <option value="resolved" {{ old('status', $complaint->status) == 'resolved' ? 'selected' : '' }}>Resolved</option>
+                                                            </select>
+                                                            @error('status')
+                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                            @enderror
+                                                        </div>
+
+                                                        <!-- Remarks Textarea -->
+                                                        <div class="mb-3">
+                                                            <label for="description" class="form-label">Remarks / Solution *</label>
                                                             <textarea class="form-control" name="description" rows="3" required></textarea>
                                                         </div>
                                                     </div>
@@ -178,6 +200,9 @@
                                             </div>
                                         </div>
                                     </div>
+
+
+
 
                                     <!-- Revert Modal -->
                                     <div class="modal fade" id="revertModal{{ $complaint->id }}" tabindex="-1">
@@ -265,6 +290,23 @@
                 fetchAssignableUsers(complaintId);
             });
         });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkbox = document.getElementById('markClosed{{ $complaint->id }}');
+        const statusSelect = document.getElementById('statusSelect{{ $complaint->id }}');
+
+        if (checkbox && statusSelect) {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    statusSelect.disabled = true;
+                } else {
+                    statusSelect.disabled = false;
+                }
+            });
+        }
     });
 </script>
 @endpush
