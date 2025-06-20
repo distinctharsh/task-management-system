@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\TmsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Hash;
@@ -44,8 +43,6 @@ Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])->nam
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
-    Route::get('/create-user', [AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/create-user', [AuthController::class, 'register']);
 });
 
 Route::middleware('auth')->group(function () {
@@ -71,18 +68,12 @@ Route::middleware('auth')->group(function () {
 
     // API routes for dynamic content
     Route::get('/api/assignable-users', [ComplaintController::class, 'getAssignableUsers'])->name('api.assignable-users');
-
-    // User management routes (admin only)
-    Route::middleware('role:admin')->group(function () {
-        Route::resource('users', UserController::class);
-    });
 });
 
-
-
-
-
-
+    // Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::resource('users', UserController::class);
+    Route::get('/create-user', [AuthController::class, 'showRegisterForm'])->name('register');
+    Route::post('/create-user', [AuthController::class, 'register']);
 
 
 require __DIR__ . '/auth.php';
