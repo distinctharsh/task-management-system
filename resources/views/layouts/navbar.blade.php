@@ -13,19 +13,23 @@
       <ul class="navbar-nav ms-auto">
         @auth
         <li class="nav-item mt-1">
-          <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
-        </li>
-        <li class="nav-item mt-1">
-          <a class="nav-link" href="{{ route('complaints.index') }}">Tickets</a>
-        </li>
-        <li class="nav-item mt-1">
-          <a class="nav-link" href="{{ route('complaints.history') }}">History</a>
-        </li>
-        @if(auth()->user()->isAdmin() || auth()->user()->isManager())
-        <li class="nav-item mt-1">
-          <a class="nav-link" href="{{ route('users.index') }}">Users</a>
-        </li>
-        @endif
+  <a class="nav-link {{ request()->routeIs('dashboard') ? 'active fw-bold text-primary' : '' }}" href="{{ route('dashboard') }}">Dashboard</a>
+</li>
+
+<li class="nav-item mt-1">
+  <a class="nav-link {{ request()->routeIs('complaints.index') ? 'active fw-bold text-primary' : '' }}" href="{{ route('complaints.index') }}">Tickets</a>
+</li>
+
+<li class="nav-item mt-1">
+  <a class="nav-link {{ request()->routeIs('complaints.history') ? 'active fw-bold text-primary' : '' }}" href="{{ route('complaints.history') }}">History</a>
+</li>
+
+@if(auth()->user()->isAdmin() || auth()->user()->isManager())
+<li class="nav-item mt-1">
+  <a class="nav-link {{ request()->routeIs('users.index') ? 'active fw-bold text-primary' : '' }}" href="{{ route('users.index') }}">Users</a>
+</li>
+@endif
+
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
             <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center" style="width: 36px; height: 36px; font-size: 1rem;">

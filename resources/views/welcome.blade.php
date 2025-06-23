@@ -76,6 +76,10 @@
             <p class="lead mb-4">Generate your ticket and track their progress easily</p>
             <div class="d-flex justify-content-center gap-3">
                 <a href="{{ route('complaints.create') }}" class="btn btn-light btn-lg">Create Ticket</a>
+                @auth
+<a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-lg">Dashboard</a>
+@endauth
+
                 @guest
                 <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg">Login</a>
                 @endguest

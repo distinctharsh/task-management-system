@@ -69,12 +69,12 @@
                                         {{ $complaint->status->display_name ?? 'Unknown' }}
                                     </span>
                                 </td>
-                                <td>
-                                    @php $priority = strtolower($complaint->priority); @endphp
-                                    <span class="badge bg-{{ $priorityColors[$priority] ?? 'secondary' }}">
+                               <td>
+                                    <span class="badge bg-{{ $complaint->priority_color }}">
                                         {{ ucfirst($complaint->priority) }}
                                     </span>
                                 </td>
+
                                 <td>{{ $complaint->client?->full_name ?? 'Guest User' }}</td>
                                 <td>
                                     @if($complaint->assignedTo)
@@ -111,34 +111,40 @@
                                         @endif
 
                                         @elseif(auth()->user()->isVM())
-                                        @if($complaint->isPending() || $complaint->assigned_to === auth()->user()->id)
-                                        <button type="button" class="btn btn-sm btn-primary"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#assignModal{{ $complaint->id }}">
-                                            Assign
-                                        </button>
-                                        @if($complaint->assigned_to === auth()->user()->id)
-                                        <button type="button" class="btn btn-sm btn-warning"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#revertModal{{ $complaint->id }}">
-                                            Revert
-                                        </button>
-                                        @endif
-                                        @endif
-                                        @elseif(auth()->user()->isNFO())
-                                        @if($complaint->assigned_to === auth()->user()->id)
-                                        <button type="button" class="btn btn-sm btn-success"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#resolveModal{{ $complaint->id }}">
-                                            Resolve
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-primary"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#assignModal{{ $complaint->id }}">
-                                            Reassign
-                                        </button>
-                                        @endif
-                                        @endif
+                                            @if($complaint->isPending() || $complaint->assigned_to === auth()->user()->id)
+                                                <button type="button" class="btn btn-sm btn-primary"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#assignModal{{ $complaint->id }}">
+                                                    Assign
+                                                </button>
+                                                @if($complaint->assigned_to === auth()->user()->id)
+                                                    <button type="button" class="btn btn-sm btn-warning"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#revertModal{{ $complaint->id }}">
+                                                        Revert
+                                                    </button>
+                                                @endif
+                                            @endif
+                                            @elseif(auth()->user()->isNFO())
+                                                @if($complaint->assigned_to === auth()->user()->id)
+                                                    @if($complaint->assigned_to === auth()->user()->id && !$complaint->isClosed())
+                                                        <button type="button" class="btn btn-sm btn-success"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#resolveModal{{ $complaint->id }}">
+                                                            Resolve
+                                                        </button>
+                                                    @endif
+
+                                                    @if($complaint->assigned_to === auth()->user()->id && !$complaint->isClosed())
+                                                        <button type="button" class="btn btn-sm btn-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#assignModal{{ $complaint->id }}">
+                                                            Reassign
+                                                        </button>
+                                                    @endif
+
+                                                @endif
+                                            @endif
                                         @endauth
                                     </div>
 

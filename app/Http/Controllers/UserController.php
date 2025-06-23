@@ -12,12 +12,19 @@ use App\Models\Vertical;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::paginate(10); // ✅ or however many per page
+        $perPage = $request->get('per_page', 10);
 
-        return view('users.index', compact('users'));
+        if ($perPage === 'all') {
+            $users = User::all(); // 👈 All records, no pagination
+        } else {
+            $users = User::paginate((int) $perPage);
+        }
+
+        return view('users.index', compact('users', 'perPage'));
     }
+
 
     public function edit(User $user)
     {

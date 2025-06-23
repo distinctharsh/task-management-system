@@ -26,9 +26,10 @@
             </div>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <a href="{{ route('complaints.index') }}" class="btn btn-outline-secondary me-2 mb-2">
+            <a href="{{ url()->previous() }}" class="btn btn-outline-secondary me-2 mb-2">
                 <i class="bi bi-arrow-left"></i> Back
             </a>
+
             @auth
             @include('complaints.partials.action-buttons')
             @endauth
