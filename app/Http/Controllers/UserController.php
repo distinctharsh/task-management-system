@@ -8,12 +8,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use App\Models\Role;
+use App\Models\Vertical;
 
 class UserController extends Controller
 {
     public function index()
     {
-          $users = User::paginate(10); // ✅ or however many per page
+        $users = User::paginate(10); // ✅ or however many per page
 
         return view('users.index', compact('users'));
     }
@@ -21,7 +22,8 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::all();
-        return view('users.edit', compact('user', 'roles'));
+        $verticals = Vertical::all();
+        return view('users.edit', compact('user', 'roles', 'verticals'));
     }
 
     public function update(Request $request, User $user)

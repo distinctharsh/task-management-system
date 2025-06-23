@@ -15,49 +15,53 @@
                     @csrf
                     @method('PUT')
 
+                    <!-- Username -->
                     <div class="mb-3">
-                        <label for="first_name" class="form-label">First Name</label>
-                        <input type="text" class="form-control @error('first_name') is-invalid @enderror" id="first_name" name="first_name" value="{{ old('first_name', $user->first_name) }}" required>
-                        @error('first_name')
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control @error('username') is-invalid @enderror"
+                            id="username" name="username" value="{{ old('username', $user->username) }}" required autofocus>
+                        @error('username')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
+                    <!-- Full Name -->
                     <div class="mb-3">
-                        <label for="last_name" class="form-label">Last Name</label>
-                        <input type="text" class="form-control @error('last_name') is-invalid @enderror" id="last_name" name="last_name" value="{{ old('last_name', $user->last_name) }}" required>
-                        @error('last_name')
+                        <label for="full_name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control @error('full_name') is-invalid @enderror"
+                            id="full_name" name="full_name" value="{{ old('full_name', $user->full_name) }}" required>
+                        @error('full_name')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
+                    <!-- Password -->
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email Address</label>
-                        <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email) }}" required>
-                        @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">New Password (leave blank to keep current)</label>
-                        <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password">
+                        <label for="password" class="form-label">Password (leave blank to keep current)</label>
+                        <input type="password" class="form-control @error('password') is-invalid @enderror"
+                            id="password" name="password">
                         @error('password')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
+                    <!-- Confirm Password -->
                     <div class="mb-3">
-                        <label for="password_confirmation" class="form-label">Confirm New Password</label>
-                        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
+                        <label for="password_confirmation" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control"
+                            id="password_confirmation" name="password_confirmation">
                     </div>
 
+                    <!-- Role -->
                     <div class="mb-3">
                         <label for="role_id" class="form-label">Role</label>
-                        <select class="form-select @error('role_id') is-invalid @enderror" id="role_id" name="role_id" required {{ $user->id === auth()->user()->id ? 'disabled' : '' }}>
-                            <option value="">Select Role</option>
+                        <select class="form-select @error('role_id') is-invalid @enderror"
+                            id="role_id" name="role_id" required
+                            onchange="document.getElementById('verticalBox').style.display = (this.options[this.selectedIndex].text.toLowerCase().includes('vm') || this.options[this.selectedIndex].text.toLowerCase().includes('nfo')) ? 'block' : 'none';"
+                            {{ $user->id === auth()->user()->id ? 'disabled' : '' }}>
+                            <option value="">Select a role</option>
                             @foreach($roles as $role)
-                                <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                            <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
                             @endforeach
                         </select>
                         @error('role_id')
@@ -68,9 +72,28 @@
                         @endif
                     </div>
 
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ route('users.index') }}" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Update User</button>
+                    <!-- Vertical -->
+                    <div class="mb-3" id="verticalBox"
+                        style="display: {{ (old('role_id', $user->role_id) && (App\Models\Role::find(old('role_id', $user->role_id))->slug == 'vm' || App\Models\Role::find(old('role_id', $user->role_id))->slug == 'nfo')) ? 'block' : 'none' }};">
+                        <label for="vertical_id" class="form-label">Vertical</label>
+                        <select name="vertical_id" class="form-control">
+                            <option value="">Select Vertical</option>
+                            @foreach($verticals as $vertical)
+                            <option value="{{ $vertical->id }}" {{ old('vertical_id', $user->vertical_id) == $vertical->id ? 'selected' : '' }}>
+                                {{ $vertical->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            Update User
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a href="{{ route('users.index') }}" class="text-decoration-none">Back to Users</a>
                     </div>
                 </form>
             </div>

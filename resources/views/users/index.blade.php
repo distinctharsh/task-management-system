@@ -6,10 +6,10 @@
         <div class="col-md-12">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>User Management</h2>
-                @if(auth()->user()->isAdmin())
-                    <a  href="{{ route('register') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-lg"></i> Add User
-                    </a>
+                @if(auth()->user()->isAdmin() || auth()->user()->isManager())
+                <a href="{{ route('register') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add User
+                </a>
                 @endif
 
             </div>
@@ -51,14 +51,14 @@
                             </td>
                             <td>{{ $user->created_at->format('M d, Y H:i') }}</td>
                             <td>
-                                    <div class="btn-group">
-                                        <a href="{{ route('users.edit', $user) }}" class="btn btn-primary btn-sm">Edit</a>
-                                        @if($user->id !== auth()->user()->id)
-                                        <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</button>
-                                        </form>
+                                <div class="btn-group">
+                                    <a href="{{ route('users.edit', $user) }}" class="btn btn-primary btn-sm">Edit</a>
+                                    @if($user->id !== auth()->user()->id && $user->role->slug !== 'manager')
+                                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</button>
+                                    </form>
                                     @endif
                                 </div>
                             </td>
