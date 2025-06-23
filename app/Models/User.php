@@ -196,4 +196,9 @@ class User extends Authenticatable
     {
         return 'username';
     }
+
+    public function vertical()
+    {
+        return $this->belongsTo(Vertical::class);
+    }
 }

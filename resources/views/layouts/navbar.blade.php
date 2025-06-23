@@ -35,7 +35,14 @@
           <ul class="dropdown-menu dropdown-menu-end">
             <li class="dropdown-header text-center">
               <strong>{{ auth()->user()->full_name }}</strong><br>
-              <small class="text-muted">{{ auth()->user()->role->name ?? 'No Role' }}</small>
+              <small class="text-muted">{{ auth()->user()->role->name ?? 'No Role' }}
+
+                @unless(auth()->user()->isAdmin() || auth()->user()->isManager())
+                @if(auth()->user()->vertical)
+                (Vertical: {{ auth()->user()->vertical->name }})
+                @endif
+                @endunless
+              </small>
             </li>
             <li>
               <hr class="dropdown-divider">
