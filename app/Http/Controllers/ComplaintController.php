@@ -246,6 +246,7 @@ class ComplaintController extends Controller
         ComplaintAction::create([
             'complaint_id' => $complaint->id,
             'user_id' => $user->id,
+            'assigned_to' => $validated['assigned_to'],
             'action' => 'assigned',
             'description' => $validated['description']
         ]);

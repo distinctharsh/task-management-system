@@ -20,6 +20,13 @@
             <i class="bi bi-clock"></i> {{ $action->created_at->format('M d, Y h:i A') }}
           </div>
           <div>{{ $action->description }}</div>
+          @if($action->assigned_to)
+            <div class="text-muted small mt-1">
+              <i class="bi bi-person-plus"></i> Assigned To:
+              @php $assignedUser = \App\Models\User::find($action->assigned_to); @endphp
+              {{ $assignedUser ? $assignedUser->full_name : 'Unknown User' }}
+            </div>
+          @endif
           @if($action->action === 'resolved' && $action->resolution)
           <div class="mt-2">
             <strong>Resolution:</strong>

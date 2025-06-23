@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('complaint_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('user_id')->default(0);
+            $table->unsignedBigInteger('assigned_to')->nullable();
             $table->string('action');
             $table->text('description');
             $table->timestamps();

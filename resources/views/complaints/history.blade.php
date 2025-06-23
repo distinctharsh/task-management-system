@@ -49,6 +49,7 @@
                                     <th>Ticket Ref</th>
                                     <th>Action</th>
                                     <th>Recent Action By</th>
+                                    <th>Assigned To</th>
                                     <th>Date</th>
                                     <th>Description</th>
                                     <th>View</th>
@@ -65,6 +66,14 @@
                                     </td>
                                     <td>{{ $latestAction?->action ?? '-' }}</td>
                                     <td>{{ $latestAction?->user?->full_name ?? $latestAction?->user?->username ?? '-' }}</td>
+                                    <td>
+                                        @if($latestAction?->assigned_to)
+                                            @php $assignedUser = \App\Models\User::find($latestAction->assigned_to); @endphp
+                                            {{ $assignedUser ? $assignedUser->full_name : 'Unknown User' }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
                                     <td>{{ $latestAction?->created_at ? $latestAction->created_at->format('M d, Y H:i') : '-' }}</td>
                                     <td>{{ $latestAction?->description ?? '-' }}</td>
                                     <td>

@@ -12,6 +12,7 @@ class ComplaintAction extends Model
     protected $fillable = [
         'complaint_id',
         'user_id',
+        'assigned_to',
         'action',
         'description'
     ];
