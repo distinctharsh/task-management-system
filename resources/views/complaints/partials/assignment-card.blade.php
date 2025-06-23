@@ -10,7 +10,7 @@
       </div>
       <div class="ms-3">
         <h6 class="mb-1">{{ $complaint->assignedTo->full_name }}</h6>
-        <p class="text-muted mb-0">{{ ucfirst($complaint->assignedTo->role) }}</p>
+        <p class="text-muted mb-0">{{ ucfirst($complaint->assignedTo->role->name) }}</p>
       </div>
     </div>
     @else
