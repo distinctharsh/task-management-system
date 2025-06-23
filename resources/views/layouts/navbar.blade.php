@@ -21,7 +21,7 @@
         <li class="nav-item mt-1">
           <a class="nav-link" href="{{ route('complaints.history') }}">History</a>
         </li>
-        @if(auth()->user()->isAdmin())
+        @if(auth()->user()->isAdmin() || auth()->user()->isManager())
         <li class="nav-item ">
           <a class="nav-link" href="{{ route('users.index') }}">Users</a>
         </li>

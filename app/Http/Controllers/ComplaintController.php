@@ -55,8 +55,9 @@ class ComplaintController extends Controller
         }
 
         // Status filter
-        if (request()->has('status')) {
-            $query->where('status_id', request('status'));
+        $status = request('status');
+        if (!empty($status)) {
+            $query->where('status_id', $status);
         }
 
         $managers = User::whereHas('role', function ($q) {
