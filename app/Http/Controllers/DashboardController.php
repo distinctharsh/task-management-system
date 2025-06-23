@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Complaint;
+use App\Models\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -38,14 +39,18 @@ class DashboardController extends Controller
                 $baseQuery->where('client_id', $user->id);
             }
 
+            // Get status IDs from the Status table
+            $statusIds = Status::whereIn('name', ['pending', 'resolved', 'in_progress', 'reverted'])
+                ->pluck('id', 'name');
+
             // Final data
             $data = [
                 'totalComplaints' => (clone $baseQuery)->count(),
-                'pendingComplaints' => (clone $baseQuery)->where('status', 'pending')->count(),
-                'resolvedComplaints' => (clone $baseQuery)->where('status', 'resolved')->count(),
-                'inProgressComplaints' => (clone $baseQuery)->where('status', 'in_progress')->count(),
-                'inRevertedComplaints' => (clone $baseQuery)->where('status', 'reverted')->count(),
-                'recentComplaints' => (clone $baseQuery)->with(['client', 'networkType', 'vertical'])
+                'pendingComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('pending'))->count(),
+                'resolvedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('resolved'))->count(),
+                'inProgressComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('in_progress'))->count(),
+                'inRevertedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('reverted'))->count(),
+                'recentComplaints' => (clone $baseQuery)->with(['client', 'networkType', 'vertical', 'status'])
                     ->latest()
                     ->take(5)
                     ->get(),

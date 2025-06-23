@@ -49,26 +49,25 @@
                                 id="password_confirmation" name="password_confirmation" required>
                         </div>
 
-
                         <!-- Role -->
                         <div class="mb-3">
-                            <label for="role" class="form-label">Role</label>
-                            <select class="form-select @error('role') is-invalid @enderror"
-                                id="role" name="role" required
-                                onchange="document.getElementById('verticalBox').style.display = (this.value === 'vm' || this.value === 'nfo') ? 'block' : 'none';">
+                            <label for="role_id" class="form-label">Role</label>
+                            <select class="form-select @error('role_id') is-invalid @enderror"
+                                id="role_id" name="role_id" required
+                                onchange="document.getElementById('verticalBox').style.display = (this.options[this.selectedIndex].text.toLowerCase().includes('vm') || this.options[this.selectedIndex].text.toLowerCase().includes('nfo')) ? 'block' : 'none';">
                                 <option value="">Select a role</option>
-                                <option value="manager" {{ old('role') == 'manager' ? 'selected' : '' }}>Manager</option>
-                                <option value="vm" {{ old('role') == 'vm' ? 'selected' : '' }}>Vertical Manager</option>
-                                <option value="nfo" {{ old('role') == 'nfo' ? 'selected' : '' }}>NFO</option>
+                                @foreach($roles as $role)
+                                    <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                                @endforeach
                             </select>
-                            @error('role')
+                            @error('role_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <!-- Vertical -->
                         <div class="mb-3" id="verticalBox"
-                            style="display: {{ (old('role') == 'vm' || old('role') == 'nfo') ? 'block' : 'none' }};">
+                            style="display: {{ (old('role_id') && (App\Models\Role::find(old('role_id'))->slug == 'vm' || App\Models\Role::find(old('role_id'))->slug == 'nfo')) ? 'block' : 'none' }};">
                             <label for="vertical_id" class="form-label">Vertical</label>
                             <select name="vertical_id" class="form-control">
                                 <option value="">Select Vertical</option>
@@ -79,8 +78,6 @@
                                 @endforeach
                             </select>
                         </div>
-
-
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">

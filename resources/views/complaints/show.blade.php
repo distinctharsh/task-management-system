@@ -8,7 +8,7 @@
             <h2 class="fw-bold mb-1">
                 Ticket: <span class="text-primary">{{ $complaint->reference_number }}</span>
                 <span class="badge bg-{{ $complaint->status_color }} ms-2">
-                    {{ ucfirst(str_replace('_', ' ', $complaint->status)) }}
+                    {{ $complaint->status->display_name ?? 'Unknown' }}
                 </span>
             </h2>
             <div class="mb-2">
@@ -117,7 +117,7 @@
                             <p class="mb-1 fw-semibold"><i class="bi bi-info-circle"></i> Status:</p>
                             <p class="ps-3">
                                 <span class="badge bg-{{ $complaint->status_color }}">
-                                    {{ ucfirst(str_replace('_', ' ', $complaint->status)) }}
+                                    {{ $complaint->status->display_name ?? 'Unknown' }}
                                 </span>
                             </p>
                         </div>
@@ -237,7 +237,7 @@
                     select.innerHTML = '<option value="">Select User</option>';
                     users.forEach(user => {
                         const option = new Option(
-                            `${user.full_name} (${user.role.toUpperCase()})`,
+                            `${user.full_name} (${user.role.name.toUpperCase()})`,
                             user.id
                         );
                         select.add(option);

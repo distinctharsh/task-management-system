@@ -38,7 +38,7 @@
                             <td>{{ $user->username }}</td>
                             <td>
                                 <span class="badge 
-                                    @switch($user->role)
+                                    @switch($user->role->slug ?? '')
                                         @case('admin') bg-danger @break
                                         @case('manager') bg-primary @break
                                         @case('vm') bg-info @break
@@ -46,7 +46,7 @@
                                         @default bg-secondary
                                     @endswitch
                                 ">
-                                    {{ ucfirst($user->role) }}
+                                    {{ $user->role->name ?? 'No Role' }}
                                 </span>
                             </td>
                             <td>{{ $user->created_at->format('M d, Y H:i') }}</td>

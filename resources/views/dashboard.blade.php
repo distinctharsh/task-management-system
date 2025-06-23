@@ -105,7 +105,7 @@
                                                     <td>{{ $complaint->vertical->name ?? 'N/A' }}</td>
                                                     <td>
                                                         <span class="badge bg-{{ $complaint->status_color }}">
-                                                            {{ $complaint->status }}
+                                                            {{ $complaint->status->display_name ?? 'Unknown' }}
                                                         </span>
                                                     </td>
                                                     @php

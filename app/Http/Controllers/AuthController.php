@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Vertical;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -45,7 +46,8 @@ class AuthController extends Controller
     public function showRegisterForm()
     {
         $verticals = Vertical::all();
-        return view('auth.register', compact('verticals'));
+        $roles = Role::all();
+        return view('auth.register', compact('verticals', 'roles'));
     }
 
     public function register(Request $request)
@@ -55,7 +57,7 @@ class AuthController extends Controller
             'username'     => 'required|string|max:50|unique:users',
             'full_name'    => 'required|string|max:100',
             'password'     => 'required|string|min:6|confirmed',
-            'role'         => 'required|in:admin,manager,vm,nfo,client',
+            'role_id'      => 'required|exists:roles,id',
             'vertical_id'  => 'nullable|exists:verticals,id', // Nullable if it's not required
         ]);
 
@@ -71,7 +73,7 @@ class AuthController extends Controller
             'username'    => $request->username,
             'full_name'   => $request->full_name,
             'password'    => Hash::make($request->password),
-            'role'        => $request->role,
+            'role_id'     => $request->role_id,
             'vertical_id' => $request->vertical_id,
         ]);
 

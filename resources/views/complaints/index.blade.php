@@ -17,6 +17,29 @@
                 <h5 class="card-title mb-0">All Tickets</h5>
             </div>
             <div class="card-body">
+                <!-- Search and Filter Section -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <form method="GET" action="{{ route('complaints.index') }}" class="d-flex">
+                            <input type="text" name="search" class="form-control me-2" placeholder="Search by reference or description..." value="{{ request('search') }}">
+                            <button type="submit" class="btn btn-outline-primary">Search</button>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        <form method="GET" action="{{ route('complaints.index') }}" class="d-flex">
+                            <select name="status" class="form-select me-2">
+                                <option value="">All Statuses</option>
+                                @foreach($statuses as $status)
+                                    <option value="{{ $status->id }}" {{ request('status') == $status->id ? 'selected' : '' }}>
+                                        {{ $status->display_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="btn btn-outline-secondary">Filter</button>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
@@ -43,7 +66,7 @@
                                 <td>{{ $complaint->vertical->name ?? 'N/A' }}</td>
                                 <td>
                                     <span class="badge bg-{{ $complaint->status_color }}">
-                                        {{ $complaint->status }}
+                                        {{ $complaint->status->display_name ?? 'Unknown' }}
                                     </span>
                                 </td>
                                 <td>
@@ -88,7 +111,7 @@
                                         @endif
 
                                         @elseif(auth()->user()->isVM())
-                                        @if($complaint->status === 'pending' || $complaint->assigned_to === auth()->user()->id)
+                                        @if($complaint->isPending() || $complaint->assigned_to === auth()->user()->id)
                                         <button type="button" class="btn btn-sm btn-primary"
                                             data-bs-toggle="modal"
                                             data-bs-target="#assignModal{{ $complaint->id }}">
@@ -173,15 +196,16 @@
 
                                                         <!-- Status Dropdown -->
                                                         <div class="mb-3">
-                                                            <label for="status" class="form-label">Status *</label>
-                                                            <select class="form-select @error('status') is-invalid @enderror"
-                                                                id="statusSelect{{ $complaint->id }}" name="status" required>
-                                                                <option value="pending" {{ old('status', $complaint->status) == 'pending' ? 'selected' : '' }}>Pending</option>
-                                                                <option value="assigned" {{ old('status', $complaint->status) == 'assigned' ? 'selected' : '' }}>Assigned</option>
-                                                                <option value="in_progress" {{ old('status', $complaint->status) == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                                                                <option value="resolved" {{ old('status', $complaint->status) == 'resolved' ? 'selected' : '' }}>Resolved</option>
+                                                            <label for="status_id" class="form-label">Status *</label>
+                                                            <select class="form-select @error('status_id') is-invalid @enderror"
+                                                                id="statusSelect{{ $complaint->id }}" name="status_id" required>
+                                                                @foreach($statuses as $status)
+                                                                    <option value="{{ $status->id }}" {{ old('status_id', $complaint->status_id) == $status->id ? 'selected' : '' }}>
+                                                                        {{ $status->display_name }}
+                                                                    </option>
+                                                                @endforeach
                                                             </select>
-                                                            @error('status')
+                                                            @error('status_id')
                                                             <div class="invalid-feedback">{{ $message }}</div>
                                                             @enderror
                                                         </div>
@@ -275,7 +299,7 @@
                 users.forEach(user => {
                     const option = document.createElement('option');
                     option.value = user.id;
-                    option.textContent = `${user.username} (${user.role.toUpperCase()})`;
+                    option.textContent = `${user.username} (${user.role.name.toUpperCase()})`;
                     select.appendChild(option);
                 });
             } catch (error) {
@@ -290,23 +314,23 @@
                 fetchAssignableUsers(complaintId);
             });
         });
-    });
-</script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const checkbox = document.getElementById('markClosed{{ $complaint->id }}');
-        const statusSelect = document.getElementById('statusSelect{{ $complaint->id }}');
+        // Add event listeners to all resolve modals for the checkbox functionality
+        document.querySelectorAll('[id^="resolveModal"]').forEach(modal => {
+            const complaintId = modal.id.replace('resolveModal', '');
+            const checkbox = modal.querySelector(`#markClosed${complaintId}`);
+            const statusSelect = modal.querySelector(`#statusSelect${complaintId}`);
 
-        if (checkbox && statusSelect) {
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    statusSelect.disabled = true;
-                } else {
-                    statusSelect.disabled = false;
-                }
-            });
-        }
+            if (checkbox && statusSelect) {
+                checkbox.addEventListener('change', function() {
+                    statusSelect.disabled = this.checked;
+                    if (this.checked) {
+                        // Optional: clear the selection or set to a default
+                        // statusSelect.selectedIndex = 0; 
+                    }
+                });
+            }
+        });
     });
 </script>
 @endpush

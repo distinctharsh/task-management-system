@@ -53,13 +53,14 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="role" class="form-label">Role</label>
-                        <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required {{ $user->id === auth()->user()->id ? 'disabled' : '' }}>
+                        <label for="role_id" class="form-label">Role</label>
+                        <select class="form-select @error('role_id') is-invalid @enderror" id="role_id" name="role_id" required {{ $user->id === auth()->user()->id ? 'disabled' : '' }}>
                             <option value="">Select Role</option>
-                            <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>User</option>
-                            <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                            @foreach($roles as $role)
+                                <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                            @endforeach
                         </select>
-                        @error('role')
+                        @error('role_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                         @if($user->id === auth()->user()->id)

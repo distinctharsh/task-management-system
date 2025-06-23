@@ -8,6 +8,7 @@ use App\Models\ComplaintAction;
 use App\Models\NetworkType;
 use App\Models\Section;
 use App\Models\Vertical;
+use App\Models\Status;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -16,15 +17,6 @@ use App\Models\Comment;
 
 class ComplaintController extends Controller
 {
-    protected $statuses = [
-        'pending' => 'Pending',
-        'assigned' => 'Assigned',
-        'in_progress' => 'In Progress',
-        'resolved' => 'Resolved',
-        'escalated' => 'Escalated',
-        'closed' => 'Closed'
-    ];
-
     public function __construct()
     {
         $this->middleware('auth')->except(['create', 'store', 'show']);
@@ -34,12 +26,13 @@ class ComplaintController extends Controller
     {
         $user = auth()->user();
 
-        $query = Complaint::query()->with(['client', 'assignedTo', 'networkType', 'vertical']);
+        $query = Complaint::query()->with(['client', 'assignedTo', 'networkType', 'vertical', 'status']);
 
         if ($user) {
             if ($user->isManager()) {
                 // Manager: See all active complaints
-                $query->whereIn('status', ['pending', 'assigned', 'in_progress', 'reverted']);
+                $activeStatusIds = Status::whereIn('name', ['pending', 'assigned', 'in_progress', 'reverted'])->pluck('id');
+                $query->whereIn('status_id', $activeStatusIds);
             } elseif ($user->isVM()) {
                 // VM: Only complaints matching user's vertical
                 $query->where('vertical_id', $user->vertical_id);
@@ -63,13 +56,16 @@ class ComplaintController extends Controller
 
         // Status filter
         if (request()->has('status')) {
-            $query->where('status', request('status'));
+            $query->where('status_id', request('status'));
         }
 
-        $managers = User::where('role', 'manager')->get();
+        $managers = User::whereHas('role', function ($q) {
+            $q->where('slug', 'manager');
+        })->get();
+        $statuses = Status::active()->ordered()->get();
         $complaints = $query->latest()->paginate(10);
 
-        return view('complaints.index', compact('complaints', 'managers'));
+        return view('complaints.index', compact('complaints', 'managers', 'statuses'));
     }
 
 
@@ -95,6 +91,9 @@ class ComplaintController extends Controller
             'intercom' => 'required|string|max:255',
         ]);
 
+        // Get pending status
+        $pendingStatus = Status::where('name', 'pending')->first();
+
         // 🔢 Generate CMP-YYYYMMDD### reference number
         $date = Carbon::now()->format('Ymd');
         $complaintsToday = Complaint::whereDate('created_at', Carbon::today())->count();
@@ -105,7 +104,7 @@ class ComplaintController extends Controller
             'client_id' => auth()->user()->id ?? 0,
             'description' => $validated['description'],
             'priority' => $validated['priority'],
-            'status' => 'pending',
+            'status_id' => $pendingStatus->id,
             'network_type_id' => $validated['network_type_id'],
             'vertical_id' => $validated['vertical_id'],
             'section_id' => $validated['section_id'],
@@ -139,10 +138,11 @@ class ComplaintController extends Controller
         $networkTypes = NetworkType::all();
         $verticals = Vertical::all();
         $sections = Section::all();
+        $statuses = Status::active()->ordered()->get();
 
-        $complaint->load(['client', 'assignedTo']);
+        $complaint->load(['client', 'assignedTo', 'status']);
 
-        return view('complaints.edit', compact('complaint', 'networkTypes', 'verticals', 'sections'));
+        return view('complaints.edit', compact('complaint', 'networkTypes', 'verticals', 'sections', 'statuses'));
     }
 
 
@@ -159,7 +159,7 @@ class ComplaintController extends Controller
             'section_id' => 'required|exists:sections,id',
             'intercom' => 'required|string|max:255',
             'priority' => 'required|in:low,medium,high',
-            'status' => 'required|in:pending,assigned,in_progress,resolved,closed',
+            'status_id' => 'required|exists:statuses,id',
             'file' => 'nullable|file|max:2048',
             'delete_file' => 'sometimes|boolean',
             'assigned_to' => 'nullable|exists:users,id',
@@ -232,10 +232,13 @@ class ComplaintController extends Controller
             }
         }
 
+        // Get assigned status
+        $assignedStatus = Status::where('name', 'assigned')->first();
+
         $complaint->update([
             'assigned_to' => $validated['assigned_to'],
             'assigned_by' => auth()->user()->id ?? 0,
-            'status' => 'assigned'
+            'status_id' => $assignedStatus->id
         ]);
 
         // Create action record
@@ -264,26 +267,31 @@ class ComplaintController extends Controller
 
         $validated = $request->validate([
             'description' => 'required|string',
-            'status' => 'nullable|string|in:pending,assigned,in_progress,resolved',
+            'status_id' => 'nullable|exists:statuses,id',
             'mark_closed' => 'nullable|boolean'
         ]);
 
-        $finalStatus = $request->has('mark_closed') ? 'closed' : $validated['status'];
+        // Determine final status
+        if ($request->has('mark_closed')) {
+            $finalStatus = Status::where('name', 'closed')->first();
+        } else {
+            $finalStatus = Status::find($validated['status_id']);
+        }
 
         $complaint->update([
-            'status' => $finalStatus,
+            'status_id' => $finalStatus->id,
             'resolution' => $validated['description'], // ✅ always store what user typed
         ]);
 
         ComplaintAction::create([
             'complaint_id' => $complaint->id,
             'user_id' => $user->id,
-            'action' => $finalStatus,
+            'action' => $finalStatus->name,
             'description' => $validated['description']
         ]);
 
         return redirect()->route('complaints.show', $complaint)
-            ->with('success', 'Complaint ' . $finalStatus . ' successfully.');
+            ->with('success', 'Complaint ' . $finalStatus->name . ' successfully.');
     }
 
 
@@ -304,9 +312,12 @@ class ComplaintController extends Controller
             'description' => 'required|string'
         ]);
 
+        // Get reverted status
+        $revertedStatus = Status::where('name', 'reverted')->first();
+
         $complaint->update([
             'assigned_to' => $validated['assigned_to'],
-            'status' => 'reverted',
+            'status_id' => $revertedStatus->id,
             'assigned_by' => $user->id
         ]);
 
@@ -385,7 +396,7 @@ class ComplaintController extends Controller
 
     public function show(Complaint $complaint)
     {
-        $complaint->load(['client', 'assignedTo', 'actions.user', 'networkType', 'vertical', 'section']);
+        $complaint->load(['client', 'assignedTo', 'actions.user', 'networkType', 'vertical', 'section', 'status']);
 
         return view('complaints.show', compact('complaint'));
     }

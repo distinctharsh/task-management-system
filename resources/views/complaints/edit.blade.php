@@ -146,16 +146,16 @@
 
                     <!-- Status (Full Width) -->
                     <div class="mb-3">
-                        <label for="status" class="form-label">Status *</label>
-                        <select class="form-select @error('status') is-invalid @enderror"
-                            id="status" name="status" required>
-                            <option value="pending" {{ old('status', $complaint->status) == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="assigned" {{ old('status', $complaint->status) == 'assigned' ? 'selected' : '' }}>Assigned</option>
-                            <option value="in_progress" {{ old('status', $complaint->status) == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                            <option value="resolved" {{ old('status', $complaint->status) == 'resolved' ? 'selected' : '' }}>Resolved</option>
-                            <option value="closed" {{ old('status', $complaint->status) == 'closed' ? 'selected' : '' }}>Closed</option>
+                        <label for="status_id" class="form-label">Status *</label>
+                        <select class="form-select @error('status_id') is-invalid @enderror"
+                            id="status_id" name="status_id" required>
+                            @foreach($statuses as $status)
+                                <option value="{{ $status->id }}" {{ old('status_id', $complaint->status_id) == $status->id ? 'selected' : '' }}>
+                                    {{ $status->display_name }}
+                                </option>
+                            @endforeach
                         </select>
-                        @error('status')
+                        @error('status_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

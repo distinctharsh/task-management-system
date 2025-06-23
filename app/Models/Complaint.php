@@ -18,7 +18,7 @@ class Complaint extends Model
         'user_name',
         'file_path',
         'intercom',
-        'status',
+        'status_id',
         'assigned_to',
         'assigned_by',
         'resolution',
@@ -29,7 +29,6 @@ class Complaint extends Model
 
     protected $casts = [
         'priority' => 'string',
-        'status' => 'string',
     ];
 
     // protected $appends = ['status_color', 'priority_color', 'network_type', 'vertical', 'section'];
@@ -45,6 +44,11 @@ class Complaint extends Model
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(Status::class);
     }
 
     public function actions()
@@ -70,46 +74,43 @@ class Complaint extends Model
     // Status Check Methods
     public function isPending()
     {
-        return $this->status === 'pending';
+        return $this->status && $this->status->name === 'pending';
     }
 
     public function isAssigned()
     {
-        return $this->status === 'assigned';
+        return $this->status && $this->status->name === 'assigned';
     }
 
     public function isInProgress()
     {
-        return $this->status === 'in_progress';
+        return $this->status && $this->status->name === 'in_progress';
     }
 
     public function isEscalated()
     {
-        return $this->status === 'escalated';
+        return $this->status && $this->status->name === 'escalated';
     }
 
     public function isResolved()
     {
-        return $this->status === 'resolved';
+        return $this->status && $this->status->name === 'resolved';
     }
 
     public function isClosed()
     {
-        return $this->status === 'closed';
+        return $this->status && $this->status->name === 'closed';
+    }
+
+    public function isReverted()
+    {
+        return $this->status && $this->status->name === 'reverted';
     }
 
     // Accessors
     public function getStatusColorAttribute()
     {
-        return match ($this->status) {
-            'pending' => 'warning',
-            'assigned' => 'info',
-            'in_progress' => 'primary',
-            'escalated' => 'danger',
-            'resolved' => 'success',
-            'closed' => 'secondary',
-            default => 'secondary',
-        };
+        return $this->status ? $this->status->color : 'secondary';
     }
 
     public function getPriorityColorAttribute()
@@ -121,7 +122,6 @@ class Complaint extends Model
             default => 'secondary',
         };
     }
-
 
     // Helper Methods
     public function canBeAssigned()

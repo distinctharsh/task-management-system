@@ -7,22 +7,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Complaint;
+use App\Models\Role;
+use App\Models\Status;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-
     protected $primaryKey = 'id';
-
-
-    // Role constants
-    const ROLE_ADMIN = 'admin';
-    const ROLE_MANAGER = 'manager';
-    const ROLE_VM = 'vm';
-    const ROLE_NFO = 'nfo';
-    const ROLE_USER = 'user';
 
     /**
      * The attributes that are mass assignable.
@@ -34,7 +27,7 @@ class User extends Authenticatable
         'password',
         'full_name',
         'address',
-        'role',
+        'role_id',
         'vertical_id'
     ];
 
@@ -57,6 +50,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
 
     public function complaints()
     {
@@ -88,7 +86,7 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->role === self::ROLE_ADMIN;
+        return $this->role && $this->role->slug === 'admin';
     }
 
     /**
@@ -96,7 +94,7 @@ class User extends Authenticatable
      */
     public function isManager(): bool
     {
-        return $this->role === self::ROLE_MANAGER;
+        return $this->role && $this->role->slug === 'manager';
     }
 
     /**
@@ -104,7 +102,7 @@ class User extends Authenticatable
      */
     public function isVM(): bool
     {
-        return $this->role === self::ROLE_VM;
+        return $this->role && $this->role->slug === 'vm';
     }
 
     /**
@@ -112,7 +110,7 @@ class User extends Authenticatable
      */
     public function isNFO(): bool
     {
-        return $this->role === self::ROLE_NFO;
+        return $this->role && $this->role->slug === 'nfo';
     }
 
     /**
@@ -120,7 +118,7 @@ class User extends Authenticatable
      */
     public function isRegularUser(): bool
     {
-        return $this->role === self::ROLE_USER;
+        return $this->role && $this->role->slug === 'client';
     }
 
     /**
@@ -129,7 +127,8 @@ class User extends Authenticatable
     public function getComplaints()
     {
         if ($this->isAdmin() || $this->isManager()) {
-            return Complaint::whereIn('status', ['pending', 'assigned', 'in_progress'])->get();
+            $activeStatusIds = Status::whereIn('name', ['pending', 'assigned', 'in_progress'])->pluck('id');
+            return Complaint::whereIn('status_id', $activeStatusIds)->get();
         }
 
         if ($this->isVM()) {
@@ -148,11 +147,13 @@ class User extends Authenticatable
      */
     public function getAssignableUsers($complaint = null)
     {
-        $query = User::query();
+        $query = User::query()->with('role');
 
         // MANAGER or ADMIN
         if ($this->isAdmin() || $this->isManager()) {
-            $query->whereIn('role', [self::ROLE_VM, self::ROLE_NFO]);
+            $query->whereHas('role', function ($q) {
+                $q->whereIn('slug', ['vm', 'nfo']);
+            });
 
             // 💡 Additional filter: same vertical only if complaint is given
             if ($complaint) {
@@ -164,7 +165,9 @@ class User extends Authenticatable
         elseif ($this->isVM()) {
             $query->where(function ($q) {
                 $q->where('id', $this->id) // self
-                    ->orWhere('role', self::ROLE_NFO); // or NFOs
+                    ->orWhereHas('role', function ($r) {
+                        $r->where('slug', 'nfo');
+                    });
             });
 
             // 💡 Vertical match only if complaint is given
@@ -175,9 +178,8 @@ class User extends Authenticatable
 
         // NFO
         elseif ($this->isNFO()) {
-            $query->where(function ($q) {
-                $q->where('role', self::ROLE_NFO)
-                    ->orWhere('role', self::ROLE_VM);
+            $query->whereHas('role', function ($q) {
+                $q->whereIn('slug', ['nfo', 'vm']);
             })->where('id', '!=', $this->id); // exclude self
 
             // 💡 Vertical match only if complaint is given
@@ -186,7 +188,7 @@ class User extends Authenticatable
             }
         }
 
-        return $query->get(['id', 'username', 'full_name', 'role']);
+        return $query->get(['id', 'username', 'full_name', 'role_id']);
     }
 
 
