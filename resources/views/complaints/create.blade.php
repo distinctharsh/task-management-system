@@ -5,7 +5,7 @@
     <div class="col-md-12 mb-4">
         <div class="d-flex justify-content-between align-items-center">
             <h2>Create Ticket</h2>
-            <a href="{{ url()->previous() }}" class="btn btn-secondary">Back to List</a>
+            <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
         </div>
     </div>
 </div>
@@ -32,8 +32,10 @@
                         </div>
                         <div class="col-md-6">
                             <label for="intercom" class="form-label">Intercom</label>
-                            <input type="text" class="form-control @error('intercom') is-invalid @enderror"
-                                id="intercom" name="intercom" value="{{ old('intercom') }}" required>
+                            <input type="number" class="form-control @error('intercom') is-invalid @enderror"
+                                id="intercom" name="intercom" value="{{ old('intercom') }}" required
+                                min="100" max="999" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '').substring(0, 3)">
+                            <small class="form-text text-muted">Enter 3-digit intercom number (e.g., 123)</small>
                             @error('intercom')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

@@ -81,7 +81,9 @@
 @endauth
 
                 @guest
-                <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg">Login</a>
+                <button type="button" class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    Login
+                </button>
                 @endguest
             </div>
         </div>
@@ -144,8 +146,103 @@
         </div>
     </footer>
 
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ route('login') }}">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control @error('username') is-invalid @enderror" id="username" name="username" value="{{ old('username') }}" required>
+                            @error('username')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" required>
+                            @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Close modal on successful login
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.querySelector('form[action="{{ route('login') }}"]');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Get form data
+                    const formData = new FormData(loginForm);
+                    
+                    // Send AJAX request
+                    fetch(loginForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        // Handle redirects
+                        if (response.redirected) {
+                            // Close the modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+                            if (modal) {
+                                modal.hide();
+                            }
+                            // Redirect to dashboard
+                            window.location.href = response.url;
+                        } else if (response.ok) {
+                            // Close the modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+                            if (modal) {
+                                modal.hide();
+                            }
+                            // Redirect to dashboard
+                            window.location.href = '{{ route('dashboard') }}';
+                        } else {
+                            // Handle errors
+                            return response.json();
+                        }
+                    })
+                    .then(data => {
+                        if (data && data.errors) {
+                            // Show validation errors
+                            const errorMessages = Object.values(data.errors).flat().join('\n');
+                            alert(errorMessages);
+                        } else if (data && data.message) {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        if (error.message.includes('redirect')) {
+                            // If error is due to redirect, don't show alert
+                            return;
+                        }
+                        alert('An error occurred during login');
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
