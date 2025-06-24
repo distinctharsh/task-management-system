@@ -106,6 +106,9 @@
                         <div class="card-body text-center p-4">
                             <h3 class="h5 mb-3">Track Progress</h3>
                             <p class="text-muted mb-0">Monitor the status of your tickets in real-time.</p>
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="trackProgressBtn">Track Ticket</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -181,68 +184,99 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Close modal on successful login
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.querySelector('form[action="{{ route('login') }}"]');
-            if (loginForm) {
-                loginForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    // Get form data
-                    const formData = new FormData(loginForm);
-                    
-                    // Send AJAX request
-                    fetch(loginForm.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => {
-                        // Handle redirects
-                        if (response.redirected) {
-                            // Close the modal
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-                            if (modal) {
-                                modal.hide();
-                            }
-                            // Redirect to dashboard
-                            window.location.href = response.url;
-                        } else if (response.ok) {
-                            // Close the modal
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-                            if (modal) {
-                                modal.hide();
-                            }
-                            // Redirect to dashboard
-                            window.location.href = '{{ route('dashboard') }}';
-                        } else {
-                            // Handle errors
-                            return response.json();
-                        }
-                    })
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get elements
+        const trackProgressBtn = document.getElementById('trackProgressBtn');
+        const searchTicketForm = document.getElementById('searchTicketForm');
+        const loginForm = document.querySelector('form[action="{{ route('login') }}"]');
+        const searchTicketModalElement = document.getElementById('searchTicketModal');
+        const loginModalElement = document.getElementById('loginModal');
+
+        // Initialize modals only if elements exist
+        let loginModal, searchTicketModal;
+        
+        if (loginModalElement) {
+            loginModal = new bootstrap.Modal(loginModalElement);
+        }
+        
+        if (searchTicketModalElement) {
+            searchTicketModal = new bootstrap.Modal(searchTicketModalElement);
+        }
+
+        // Track Progress button click handler
+        if (trackProgressBtn) {
+            trackProgressBtn.addEventListener('click', function() {
+                // Check user's IP address
+                fetch('https://api.ipify.org?format=json')
+                    .then(response => response.json())
                     .then(data => {
-                        if (data && data.errors) {
-                            // Show validation errors
-                            const errorMessages = Object.values(data.errors).flat().join('\n');
-                            alert(errorMessages);
-                        } else if (data && data.message) {
-                            alert(data.message);
+                        const userIP = data.ip;
+                        
+                        if (userIP === '152.58.116.37') {
+                            window.location.href = '{{ route('complaints.index') }}';
+                        } else if (searchTicketModal) {
+                            searchTicketModal.show();
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                        if (error.message.includes('redirect')) {
-                            // If error is due to redirect, don't show alert
-                            return;
+                        console.error('Error getting IP:', error);
+                        if (searchTicketModal) {
+                            searchTicketModal.show();
                         }
-                        alert('An error occurred during login');
                     });
+            });
+        }
+
+        // Search ticket form submit handler
+        if (searchTicketForm) {
+            searchTicketForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const referenceNumber = document.getElementById('reference_number').value;
+                window.location.href = `/complaints/${referenceNumber}`;
+            });
+        }
+
+        // Login form submit handler
+        if (loginForm && loginModal) {
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(loginForm);
+                
+                fetch(loginForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        loginModal.hide();
+                        window.location.href = response.url;
+                    } else if (response.ok) {
+                        loginModal.hide();
+                        window.location.href = '{{ route('dashboard') }}';
+                    } else {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data && data.errors) {
+                        alert(Object.values(data.errors).flat().join('\n'));
+                    } else if (data && data.message) {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (!error.message.includes('redirect')) {
+                        alert('An error occurred during login');
+                    }
                 });
-            }
-        });
-    </script>
+            });
+        }
+    });
+</script>
 </body>
 
 </html>
