@@ -286,8 +286,21 @@
                             html += `<div class='mb-2'><strong>Vertical:</strong> ${data.complaint.vertical}</div>`;
                             html += `<div class='mb-2'><strong>Description:</strong><br><span class='text-muted'>${data.complaint.description}</span></div>`;
                             complaintDetailsBody.innerHTML = html;
-                            bootstrap.Modal.getInstance(document.getElementById('searchTicketModal')).hide();
-                            complaintDetailsModal.show();
+                            // Hide search modal and cleanup
+                            const searchModal = bootstrap.Modal.getInstance(document.getElementById('searchTicketModal'));
+                            if (searchModal) {
+                                searchModal.hide();
+                                // Wait for modal to be hidden
+                                searchModal._element.addEventListener('hidden.bs.modal', function() {
+                                    // Remove backdrop
+                                    const backdrop = document.querySelector('.modal-backdrop');
+                                    if (backdrop) {
+                                        backdrop.remove();
+                                    }
+                                    // Show complaint details modal
+                                    complaintDetailsModal.show();
+                                });
+                            }
                         } else {
                             searchError.textContent = (data && data.error) ? data.error : 'Complaint not found.';
                             searchError.classList.remove('d-none');

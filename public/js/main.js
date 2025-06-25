@@ -32,17 +32,4 @@ document.addEventListener('DOMContentLoaded', function() {
             searchTicketModal.show();
         }
     });
-
-    // Handle form submission
-    const searchTicketForm = document.getElementById('searchTicketForm');
-    if (searchTicketForm) {
-        searchTicketForm.addEventListener('submit', function(e) {
-            const complaintId = searchTicketForm.querySelector('#complaint_id').value;
-            if (!complaintId) {
-                e.preventDefault();
-                alert('Please enter a complaint ID');
-                return;
-            }
-        });
-    }
 });
