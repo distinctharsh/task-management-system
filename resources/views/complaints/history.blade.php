@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Ticket History</h4>
-                    <a href="{{ route('complaints.index') }}" class="btn btn-secondary">Back to Tickets</a>
+                    <a href="{{ auth()->check() ? route('dashboard') : route('home') }}" class="btn btn-secondary">Back</a>
                 </div>
                 <div class="card-body">
                     <form method="GET" action="" class="mb-3">

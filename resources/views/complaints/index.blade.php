@@ -18,16 +18,11 @@
             </div>
             <div class="card-body">
                 <!-- Search and Filter Section -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <form method="GET" action="{{ route('complaints.index') }}" class="d-flex">
-                            <input type="text" name="search" class="form-control me-2" placeholder="Search by reference or description..." value="{{ request('search') }}">
-                            <button type="submit" class="btn btn-outline-primary">Search</button>
-                        </form>
-                    </div>
-                    <div class="col-md-6">
-                        <form method="GET" action="{{ route('complaints.index') }}" class="d-flex">
-                            <select name="status" class="form-select me-2">
+                <div class="row mb-3 align-items-center">
+                    <div class="col-md-8">
+                        <form method="GET" action="{{ route('complaints.index') }}" class="d-flex gap-2">
+                            <input type="text" name="search" class="form-control" placeholder="Search by reference or description..." value="{{ request('search') }}">
+                            <select name="status" class="form-select">
                                 <option value="">All Statuses</option>
                                 @foreach($statuses as $status)
                                     <option value="{{ $status->id }}" {{ request('status') == $status->id ? 'selected' : '' }}>
@@ -35,13 +30,16 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <button type="submit" class="btn btn-outline-secondary">Filter</button>
+                            <button type="submit" class="btn btn-outline-primary">Search</button>
                         </form>
+                    </div>
+                    <div class="col-md-4 d-flex justify-content-end">
+                        <div id="dtExportButtons"></div>
                     </div>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table id="complaintsTable" class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Reference</th>
@@ -52,6 +50,7 @@
                                 <th>Priority</th>
                                 <th>Created By</th>
                                 <th>Assigned To</th>
+                                <th>Assigned By</th>
                                 <th>Created At</th>
                                 <th>Actions</th>
                             </tr>
@@ -76,12 +75,10 @@
                                 </td>
 
                                 <td>{{ $complaint->client?->full_name ?? 'Guest User' }}</td>
+                                <td>{{ $complaint->assignedTo?->full_name ?? 'Not Assigned' }}</td>
                                 <td>
-                                    @if($complaint->assignedTo)
-                                    {{ $complaint->assignedTo->full_name }}
-                                    @else
-                                    <span class="text-muted">Not Assigned</span>
-                                    @endif
+                                    @php $assignedBy = $complaint->assigned_by ? \App\Models\User::find($complaint->assigned_by) : null; @endphp
+                                    {{ $assignedBy?->full_name ?? 'N/A' }}
                                 </td>
                                 <td>{{ $complaint->created_at->format('M d, Y H:i') }}</td>
                                 <td>
@@ -275,7 +272,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="8" class="text-center">No tickets found.</td>
+                                <td colspan="10" class="text-center">No complaints found.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -291,53 +288,68 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('js/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('js/dataTables.bootstrap5.min.js') }}"></script>
+<script src="{{ asset('js/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('js/responsive.bootstrap5.min.js') }}"></script>
+<script src="{{ asset('js/dataTables.buttons.min.js') }}"></script>
+<script src="{{ asset('js/buttons.bootstrap5.min.js') }}"></script>
+<script src="{{ asset('js/jszip.min.js') }}"></script>
+<script src="{{ asset('js/pdfmake.min.js') }}"></script>
+<script src="{{ asset('js/vfs_fonts.js') }}"></script>
+<script src="{{ asset('js/buttons.html5.min.js') }}"></script>
+<script src="{{ asset('js/buttons.print.min.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Function to fetch assignable users
-        async function fetchAssignableUsers(complaintId) {
-            try {
-                const response = await fetch(`/api/assignable-users?complaint_id=${complaintId}`);
-                const users = await response.json();
-
-                const select = document.querySelector(`#assignModal${complaintId} select[name="assigned_to"]`);
-                select.innerHTML = '<option value="">Select User</option>';
-
-                users.forEach(user => {
-                    const option = document.createElement('option');
-                    option.value = user.id;
-                    option.textContent = `${user.username} (${user.role.name.toUpperCase()})`;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error fetching assignable users:', error);
+$(document).ready(function() {
+    var table = $('#complaintsTable').DataTable({
+        responsive: true,
+        order: [[0, 'desc']],
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search records",
+            lengthMenu: "Show _MENU_ entries",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
             }
-        }
-
-        // Add event listeners to all assign modals
-        document.querySelectorAll('[id^="assignModal"]').forEach(modal => {
-            const complaintId = modal.id.replace('assignModal', '');
-            modal.addEventListener('show.bs.modal', () => {
-                fetchAssignableUsers(complaintId);
-            });
-        });
-
-        // Add event listeners to all resolve modals for the checkbox functionality
-        document.querySelectorAll('[id^="resolveModal"]').forEach(modal => {
-            const complaintId = modal.id.replace('resolveModal', '');
-            const checkbox = modal.querySelector(`#markClosed${complaintId}`);
-            const statusSelect = modal.querySelector(`#statusSelect${complaintId}`);
-
-            if (checkbox && statusSelect) {
-                checkbox.addEventListener('change', function() {
-                    statusSelect.disabled = this.checked;
-                    if (this.checked) {
-                        // Optional: clear the selection or set to a default
-                        // statusSelect.selectedIndex = 0; 
-                    }
-                });
+        },
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<i class="fas fa-copy"></i> Copy',
+                className: 'btn btn-sm btn-outline-primary me-1'
+            },
+            {
+                extend: 'csv',
+                text: '<i class="fas fa-file-csv"></i> CSV',
+                className: 'btn btn-sm btn-outline-success me-1'
+            },
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel"></i> Excel',
+                className: 'btn btn-sm btn-outline-success me-1'
+            },
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf"></i> PDF',
+                className: 'btn btn-sm btn-outline-danger me-1'
+            },
+            {
+                extend: 'print',
+                text: '<i class="fas fa-print"></i> Print',
+                className: 'btn btn-sm btn-outline-secondary'
             }
-        });
+        ]
     });
+    // Move DataTable buttons to custom div
+    table.buttons().container().appendTo('#dtExportButtons');
+});
 </script>
 @endpush
 @endsection

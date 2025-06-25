@@ -91,6 +91,8 @@
                                                     <th>Status</th>
                                                     <th>Priority</th>
                                                     <th>Created By</th>
+                                                    <th>Assigned To</th>
+                                                    <th>Assigned By</th>
                                                     <th>Created At</th>
                                                     <th>Actions</th>
                                                 </tr>
@@ -112,6 +114,11 @@
                                                             </span>
                                                         </td>
                                                         <td>{{ $complaint->client_id === 0 ? 'client' : ($complaint->client?->name ?? 'N/A') }}</td>
+                                                        <td>{{ $complaint->assignedTo?->full_name ?? 'Not Assigned' }}</td>
+                                                        <td>
+                                                            @php $assignedBy = $complaint->assigned_by ? \App\Models\User::find($complaint->assigned_by) : null; @endphp
+                                                            {{ $assignedBy?->full_name ?? 'N/A' }}
+                                                        </td>
                                                         <td>{{ $complaint->created_at->format('Y-m-d H:i') }}</td>
                                                         <td>
                                                             <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-sm btn-primary">View</a>
@@ -119,7 +126,7 @@
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="8" class="text-center">No complaints today.</td>
+                                                        <td colspan="10" class="text-center">No complaints today.</td>
                                                     </tr>
                                                 @endforelse
                                             </tbody>
