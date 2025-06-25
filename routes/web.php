@@ -36,7 +36,12 @@ Route::get('/home', function () {
 // Public complaint routes
 Route::get('/complaints/create', [ComplaintController::class, 'create'])->name('complaints.create');
 Route::post('/complaints', [ComplaintController::class, 'store'])->name('complaints.store');
-Route::get('/complaints/history', [ComplaintController::class, 'history'])->name('complaints.history');
+
+// History route is public but protected by IP
+Route::get('/complaints/history', [ComplaintController::class, 'history'])
+    ->name('complaints.history')
+    ->middleware(\App\Http\Middleware\CheckIPAccess::class);
+
 Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])->name('complaints.show');
 
 // Authentication routes
@@ -68,12 +73,12 @@ Route::middleware('auth')->group(function () {
 
     // API routes for dynamic content
     Route::get('/api/assignable-users', [ComplaintController::class, 'getAssignableUsers'])->name('api.assignable-users');
-});
 
-    // Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::resource('users', UserController::class);
     Route::get('/create-user', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/create-user', [AuthController::class, 'register']);
+});
 
+Route::get('/complaints/track', [App\Http\Controllers\ComplaintController::class, 'track'])->name('complaints.track');
 
 require __DIR__ . '/auth.php';

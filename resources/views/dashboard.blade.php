@@ -73,20 +73,19 @@
                         @endif
                     </div>
 
-                    <!-- Recent Complaints (from controller variables) -->
+                    <!-- Today's Complaints -->
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5 class="card-title mb-0">Recent Complaints</h5>
+                                    <h5 class="card-title mb-0">Today's Complaints</h5>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-hover">
+                                        <table id="complaintsTable" class="table table-hover">
                                             <thead>
                                                 <tr>
                                                     <th>Reference</th>
-                                                    <!-- <th>Subject</th> -->
                                                     <th>Network</th>
                                                     <th>Vertical</th>
                                                     <th>Status</th>
@@ -97,46 +96,31 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @forelse($recentComplaints as $complaint)
-                                                <tr>
-                                                    <td>{{ $complaint->reference_number }}</td>
-                                                    <!-- <td>{{ $complaint->subject }}</td> -->
-                                                    <td>{{ $complaint->networkType->name ?? 'N/A' }}</td>
-                                                    <td>{{ $complaint->vertical->name ?? 'N/A' }}</td>
-                                                    <td>
-                                                        <span class="badge bg-{{ $complaint->status_color }}">
-                                                            {{ $complaint->status->display_name ?? 'Unknown' }}
-                                                        </span>
-                                                    </td>
-                                                    @php
-
-                                                    $textColor = $complaint->priority_color === 'warning' ? 'text-dark' : 'text-white';
-                                                    @endphp
-
-                                                    <td>
-                                                        <span class="badge bg-{{ $complaint->priority_color }} {{ $textColor }}">
-                                                            {{ $complaint->priority }}
-                                                        </span>
-                                                    </td>
-
-                                                    <td>{{ $complaint->client?->full_name ?? 'Guest User' }}</td>
-                                                    <td>{{ $complaint->created_at->format('M d, Y H:i') }}</td>
-                                                    <td>
-                                                        <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-sm btn-info">View</a>
-                                                        
-                                                        @auth
-                                                            @if(auth()->user()->isManager())
-                                                                @can('update', $complaint)
-                                                                    <a href="{{ route('complaints.edit', $complaint) }}" class="btn btn-sm btn-primary">Edit</a>
-                                                                @endcan
-                                                            @endif
-                                                        @endauth
-                                                    </td>
-                                                </tr>
+                                                @forelse($todayComplaints as $complaint)
+                                                    <tr>
+                                                        <td>{{ $complaint->reference_number }}</td>
+                                                        <td>{{ $complaint->networkType?->name ?? 'N/A' }}</td>
+                                                        <td>{{ $complaint->vertical?->name ?? 'N/A' }}</td>
+                                                        <td>
+                                                            <span class="badge bg-{{ $complaint->status_color }}">
+                                                                {{ $complaint->status?->name ?? 'Unknown' }}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-{{ $complaint->priority_color ?? 'secondary' }}">
+                                                                {{ $complaint->priority ?? 'Unknown' }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ $complaint->client_id === 0 ? 'client' : ($complaint->client?->name ?? 'N/A') }}</td>
+                                                        <td>{{ $complaint->created_at->format('Y-m-d H:i') }}</td>
+                                                        <td>
+                                                            <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-sm btn-primary">View</a>
+                                                        </td>
+                                                    </tr>
                                                 @empty
-                                                <tr>
-                                                    <td colspan="7" class="text-center">No complaints found.</td>
-                                                </tr>
+                                                    <tr>
+                                                        <td colspan="8" class="text-center">No complaints today.</td>
+                                                    </tr>
                                                 @endforelse
                                             </tbody>
                                         </table>
@@ -146,9 +130,86 @@
                         </div>
                     </div>
 
+
+
                 </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
+
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/dataTables.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('css/buttons.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('css/responsive.bootstrap5.min.css') }}">
+@endsection
+
+@section('scripts')
+<script src="{{ asset('js/jquery-3.6.0.min.js') }}"></script>
+<script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('js/dataTables.bootstrap5.min.js') }}"></script>
+<script src="{{ asset('js/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('js/responsive.bootstrap5.min.js') }}"></script>
+<script src="{{ asset('js/dataTables.buttons.min.js') }}"></script>
+<script src="{{ asset('js/buttons.bootstrap5.min.js') }}"></script>
+<script src="{{ asset('js/jszip.min.js') }}"></script>
+<script src="{{ asset('js/pdfmake.min.js') }}"></script>
+<script src="{{ asset('js/vfs_fonts.js') }}"></script>
+<script src="{{ asset('js/buttons.html5.min.js') }}"></script>
+<script src="{{ asset('js/buttons.print.min.js') }}"></script>
+
+<script>
+$(document).ready(function() {
+    $('#complaintsTable').DataTable({
+        responsive: true,
+        order: [[0, 'desc']],
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search records",
+            lengthMenu: "Show _MENU_ entries",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        },
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<i class="fas fa-copy"></i> Copy',
+                className: 'btn btn-sm btn-outline-primary'
+            },
+            {
+                extend: 'csv',
+                text: '<i class="fas fa-file-csv"></i> CSV',
+                className: 'btn btn-sm btn-outline-success'
+            },
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel"></i> Excel',
+                className: 'btn btn-sm btn-outline-success'
+            },
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf"></i> PDF',
+                className: 'btn btn-sm btn-outline-danger'
+            },
+            {
+                extend: 'print',
+                text: '<i class="fas fa-print"></i> Print',
+                className: 'btn btn-sm btn-outline-secondary'
+            }
+        ]
+    });
+});
+</script>
+@endsection
+
+@stack('scripts')
+</body>
+</html>

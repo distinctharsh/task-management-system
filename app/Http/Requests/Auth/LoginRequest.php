@@ -47,7 +47,7 @@ class LoginRequest extends FormRequest
         //     'user' => \App\Models\User::where('username', $this->username)->first()
         // ]);
 
-        if (! Auth::attempt($this->only('username', 'password'), $this->boolean('remember'))) {
+        if (! Auth::attempt($this->only('username', 'password'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

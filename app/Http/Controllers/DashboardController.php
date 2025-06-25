@@ -50,11 +50,13 @@ class DashboardController extends Controller
                 'resolvedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('resolved'))->count(),
                 'inProgressComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('in_progress'))->count(),
                 'inRevertedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('reverted'))->count(),
-                'recentComplaints' => (clone $baseQuery)->with(['client', 'networkType', 'vertical', 'status'])
-                    ->latest()
-                    ->take(5)
+                'todayComplaints' => (clone $baseQuery)->with(['client', 'networkType', 'vertical', 'status'])
+                    ->whereDate('created_at', today())
                     ->get(),
             ];
+            
+            // Remove the old recentComplaints section from the view
+            return view('dashboard', $data)->with('error', null);
 
             return view('dashboard', $data);
         } catch (\Exception $e) {

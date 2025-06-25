@@ -9,4 +9,12 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
+
+    /**
+     * Get the user's IP address.
+     */
+    public static function getUserIp()
+    {
+        return request()->ip();
+    }
 }

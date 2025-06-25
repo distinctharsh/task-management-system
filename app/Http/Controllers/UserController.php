@@ -14,14 +14,15 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
+        if (!auth()->user() || !auth()->user()->isManager()) {
+            return redirect()->route('home')->with('error', 'Access denied.');
+        }
         $perPage = $request->get('per_page', 10);
-
         if ($perPage === 'all') {
-            $users = User::all(); // 👈 All records, no pagination
+            $users = User::all();
         } else {
             $users = User::paginate((int) $perPage);
         }
-
         return view('users.index', compact('users', 'perPage'));
     }
 

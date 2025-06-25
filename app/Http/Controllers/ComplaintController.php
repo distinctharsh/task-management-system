@@ -19,7 +19,7 @@ class ComplaintController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['create', 'store', 'show']);
+        $this->middleware('auth')->except(['create', 'store', 'show', 'history', 'track']);
     }
 
     public function index()
@@ -415,5 +415,19 @@ class ComplaintController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Comment added successfully.');
+    }
+
+    /**
+     * Track a complaint by reference number (for guests).
+     */
+    public function track(Request $request)
+    {
+        $ref = $request->input('reference_number');
+        $complaint = \App\Models\Complaint::where('reference_number', $ref)->first();
+        if ($complaint) {
+            return redirect()->route('complaints.show', $complaint->id);
+        } else {
+            return back()->with('error', 'Complaint not found');
+        }
     }
 }
