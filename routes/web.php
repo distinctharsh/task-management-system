@@ -73,6 +73,7 @@ Route::middleware('auth')->group(function () {
 
     // API routes for dynamic content
     Route::get('/api/assignable-users', [ComplaintController::class, 'getAssignableUsers'])->name('api.assignable-users');
+    Route::get('/api/complaints/lookup', [App\Http\Controllers\ComplaintController::class, 'lookup'])->name('api.complaints.lookup');
 
     Route::resource('users', UserController::class);
     Route::get('/create-user', [AuthController::class, 'showRegisterForm'])->name('register');

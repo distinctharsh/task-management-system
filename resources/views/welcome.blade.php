@@ -196,13 +196,29 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="searchTicketForm" action="{{ route('complaints.track') }}" method="GET">
+                    <form id="searchTicketForm" autocomplete="off">
                         <div class="mb-3">
                             <label for="reference_number" class="form-label">Complaint Reference Number</label>
                             <input type="text" class="form-control" id="reference_number" name="reference_number" required>
                         </div>
+                        <div id="searchError" class="alert alert-danger d-none"></div>
                         <button type="submit" class="btn btn-primary w-100">Search</button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaint Details Modal -->
+    <div class="modal fade" id="complaintDetailsModal" tabindex="-1" aria-labelledby="complaintDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="complaintDetailsModalLabel">Complaint Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="complaintDetailsBody">
+                    <!-- Details will be loaded here -->
                 </div>
             </div>
         </div>
@@ -211,7 +227,7 @@
     <!-- Scripts -->
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script>
-    window.ALLOWED_IPS = ['10.1.64.187', '127.0.0.1', '::1', '10.1.64.186'];
+    window.ALLOWED_IPS = ['10.1.64.189', '127.0.0.1', '::1', '10.1.64.186'];
     window.USER_IP = '{{ $user_ip ?? request()->ip() }}';
     // console.log('window.USER_IP:', window.USER_IP);
     // alert('window.USER_IP: ' + window.USER_IP);
@@ -220,9 +236,16 @@
     document.addEventListener('DOMContentLoaded', function() {
         const trackProgressBtn = document.getElementById('trackProgressBtn');
         const searchTicketModalElement = document.getElementById('searchTicketModal');
-        let searchTicketModal;
+        const complaintDetailsModalElement = document.getElementById('complaintDetailsModal');
+        const complaintDetailsBody = document.getElementById('complaintDetailsBody');
+        const searchTicketForm = document.getElementById('searchTicketForm');
+        const searchError = document.getElementById('searchError');
+        let searchTicketModal, complaintDetailsModal;
         if (searchTicketModalElement) {
             searchTicketModal = new bootstrap.Modal(searchTicketModalElement);
+        }
+        if (complaintDetailsModalElement) {
+            complaintDetailsModal = new bootstrap.Modal(complaintDetailsModalElement);
         }
         trackProgressBtn.addEventListener('click', function() {
             if (window.ALLOWED_IPS.includes(window.USER_IP)) {
@@ -233,6 +256,49 @@
                 }
             }
         });
+        if (searchTicketForm) {
+            searchTicketForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                searchError.classList.add('d-none');
+                const refInput = document.getElementById('reference_number');
+                if (!refInput) {
+                    searchError.textContent = 'Reference number input not found.';
+                    searchError.classList.remove('d-none');
+                    return;
+                }
+                const ref = refInput.value.trim();
+                if (!ref) {
+                    searchError.textContent = 'Please enter a complaint reference number.';
+                    searchError.classList.remove('d-none');
+                    return;
+                }
+                fetch(`/api/complaints/lookup?reference_number=${encodeURIComponent(ref)}`)
+                    .then(async res => {
+                        let data;
+                        try { data = await res.json(); } catch { data = {}; }
+                        if (res.ok && data.success) {
+                            let html = `<div class='mb-2'><strong>Reference:</strong> ${data.complaint.reference_number}</div>`;
+                            html += `<div class='mb-2'><strong>Status:</strong> <span class='badge bg-${data.complaint.status_color}'>${data.complaint.status}</span></div>`;
+                            html += `<div class='mb-2'><strong>Priority:</strong> <span class='badge bg-${data.complaint.priority_color}'>${data.complaint.priority}</span></div>`;
+                            html += `<div class='mb-2'><strong>Created By:</strong> ${data.complaint.created_by}</div>`;
+                            html += `<div class='mb-2'><strong>Created At:</strong> ${data.complaint.created_at}</div>`;
+                            html += `<div class='mb-2'><strong>Network:</strong> ${data.complaint.network}</div>`;
+                            html += `<div class='mb-2'><strong>Vertical:</strong> ${data.complaint.vertical}</div>`;
+                            html += `<div class='mb-2'><strong>Description:</strong><br><span class='text-muted'>${data.complaint.description}</span></div>`;
+                            complaintDetailsBody.innerHTML = html;
+                            bootstrap.Modal.getInstance(document.getElementById('searchTicketModal')).hide();
+                            complaintDetailsModal.show();
+                        } else {
+                            searchError.textContent = (data && data.error) ? data.error : 'Complaint not found.';
+                            searchError.classList.remove('d-none');
+                        }
+                    })
+                    .catch(() => {
+                        searchError.textContent = 'Complaint not found.';
+                        searchError.classList.remove('d-none');
+                    });
+            });
+        }
     });
     </script>
 </body>

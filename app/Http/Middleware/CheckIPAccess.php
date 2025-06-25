@@ -14,7 +14,7 @@ class CheckIPAccess
      */
     public function handle(Request $request, Closure $next): \Symfony\Component\HttpFoundation\Response
     {
-        $allowedIPs = ['10.1.64.186', '10.1.64.187', '10.1.64.188'];
+        $allowedIPs = ['10.1.64.186', '10.1.64.188'];
         $clientIP = $request->ip();
 
         // If IP matches and user is not authenticated, allow access to history page

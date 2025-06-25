@@ -430,4 +430,35 @@ class ComplaintController extends Controller
             return back()->with('error', 'Complaint not found');
         }
     }
+
+    /**
+     * AJAX lookup for complaint by reference number.
+     */
+    public function lookup(Request $request)
+    {
+        $ref = $request->input('reference_number');
+        \Log::info('Looking up complaint', ['ref' => $ref]);
+        $complaint = \App\Models\Complaint::with(['client', 'networkType', 'vertical', 'status'])
+            ->whereRaw('LOWER(reference_number) = ?', [strtolower($ref)])
+            ->first();
+        if ($complaint) {
+            return response()->json([
+                'success' => true,
+                'complaint' => [
+                    'reference_number' => $complaint->reference_number,
+                    'status' => $complaint->status?->display_name ?? 'Unknown',
+                    'status_color' => $complaint->status_color,
+                    'priority' => ucfirst($complaint->priority),
+                    'priority_color' => $complaint->priority_color,
+                    'created_by' => $complaint->client?->full_name ?? $complaint->user_name ?? 'Guest',
+                    'created_at' => $complaint->created_at->format('M d, Y H:i'),
+                    'description' => $complaint->description,
+                    'network' => $complaint->networkType?->name ?? 'N/A',
+                    'vertical' => $complaint->vertical?->name ?? 'N/A',
+                ]
+            ]);
+        } else {
+            return response()->json(['success' => false, 'error' => 'Complaint not found.'], 404);
+        }
+    }
 }

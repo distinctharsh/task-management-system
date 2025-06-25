@@ -2,6 +2,24 @@
 
 @section('content')
 <div class="container-xxl">
+    @guest
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Guest Notice:</strong> You are viewing complaint details as a guest. For more actions, please log in.
+        </div>
+        <button class="btn btn-outline-primary btn-sm" onclick="openSearchModal()">Search Another Complaint</button>
+    </div>
+    <script>
+    function openSearchModal() {
+        if (window.bootstrap && document.getElementById('searchTicketModal')) {
+            var modal = new bootstrap.Modal(document.getElementById('searchTicketModal'));
+            modal.show();
+        } else {
+            window.location.href = '/';
+        }
+    }
+    </script>
+    @endguest
     <!-- Header Section -->
     <div class="row mb-4 align-items-center">
         <div class="col-md-8">
