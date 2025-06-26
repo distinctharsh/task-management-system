@@ -157,13 +157,28 @@
                      <!-- Comments Card -->
             <div class="card shadow-sm">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Comments</h5>
+                    <h5 class="mb-0">Comments
+                        <span class="text-muted small ms-2"></span>
+                    </h5>
                 </div>
                 <div class="card-body">
                     @auth
                         @if($complaint->canUserComment(auth()->user()))
                             <form action="{{ route('complaints.comment', $complaint) }}" method="POST" class="mb-4">
                                 @csrf
+                                {{-- Debugging --}}
+                                {{-- <div>auth id: {{ auth()->id() }}, assigned_to: {{ $complaint->assigned_to }}, isManager: {{ auth()->user() && auth()->user()->isManager() ? 'yes' : 'no' }}</div> --}}
+                                @if(auth()->check() && $complaint->assigned_to && auth()->user()->id == $complaint->assigned_to && !(auth()->user()->isManager()) && !$complaint->isCompleted())
+                                    <div class="mb-3">
+                                        <label for="status_id" class="form-label">Status <span class="text-danger">*</span></label>
+                                        <select name="status_id" id="status_id" class="form-select" required>
+                                            <option value="">Select status</option>
+                                            @foreach($statusOptions as $status)
+                                                <option value="{{ $status->id }}">{{ $status->display_name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
                                 <div class="mb-3">
                                     <textarea name="comment" class="form-control" rows="3" placeholder="Add a comment..." required></textarea>
                                 </div>
@@ -232,6 +247,27 @@
                     </dl>
                 </div>
             </div>
+
+            @if($complaint->isCompleted() && (
+                (auth()->user() && auth()->user()->isManager()) ||
+                (auth()->user() && auth()->user()->isVM() && $complaint->assignedTo && $complaint->assignedTo->isNFO())
+            ))
+                <form action="{{ route('complaints.update', $complaint) }}" method="POST" class="mb-4">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-3">
+                        <label for="close_status_id" class="form-label">Status <span class="text-danger">*</span></label>
+                        <select name="status_id" id="close_status_id" class="form-select" required>
+                            <option value="{{ $closeStatus->id }}">Closed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <textarea name="description" class="form-control" rows="2" placeholder="Remarks (required)" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">Close</button>
+                    <a href="#" class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#assignModal{{ $complaint->id }}">Assign</a>
+                </form>
+            @endif
         </div>
     </div>
 </div>

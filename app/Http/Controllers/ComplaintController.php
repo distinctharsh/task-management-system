@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Comment;
+use Illuminate\Support\Facades\Auth;
 
 class ComplaintController extends Controller
 {
@@ -24,7 +25,7 @@ class ComplaintController extends Controller
 
     public function index()
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $query = Complaint::query()->with(['client', 'assignedTo', 'networkType', 'vertical', 'status']);
 
@@ -119,7 +120,7 @@ class ComplaintController extends Controller
 
         $complaint = Complaint::create([
             'reference_number' => $referenceNumber,
-            'client_id' => auth()->user()->id ?? 0,
+            'client_id' => Auth::user()->id ?? 0,
             'description' => $validated['description'],
             'priority' => $validated['priority'],
             'status_id' => $unassignedStatus->id,
@@ -139,7 +140,7 @@ class ComplaintController extends Controller
         // Create initial action record
         ComplaintAction::create([
             'complaint_id' => $complaint->id,
-            'user_id' => auth()->user()->id ?? 0,
+            'user_id' => Auth::user()->id ?? 0,
             'action' => 'created',
             'description' => 'Complaint created',
             'changes' => json_encode($complaint->getChanges())
@@ -200,7 +201,7 @@ class ComplaintController extends Controller
 
         // Check if assigned_to is being changed
         if (isset($validated['assigned_to']) && $validated['assigned_to'] != $complaint->assigned_to) {
-            $validated['assigned_by'] = auth()->user()->id ?? 0;
+            $validated['assigned_by'] = Auth::user()->id ?? 0;
         }
 
         $complaint->update($validated);
@@ -208,7 +209,7 @@ class ComplaintController extends Controller
         // Create action record
         ComplaintAction::create([
             'complaint_id' => $complaint->id,
-            'user_id' => auth()->user()->id ?? 0,
+            'user_id' => Auth::user()->id ?? 0,
             'action' => 'updated',
             'description' => 'Complaint updated',
             'changes' => json_encode($complaint->getChanges())
@@ -222,7 +223,7 @@ class ComplaintController extends Controller
 
     public function assign(Request $request, Complaint $complaint)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         if (!$user->isManager() && !$user->isVM() && !$user->isNFO()) {
             abort(403, 'Unauthorized action.');
@@ -255,7 +256,7 @@ class ComplaintController extends Controller
 
         $complaint->update([
             'assigned_to' => $validated['assigned_to'],
-            'assigned_by' => auth()->user()->id ?? 0,
+            'assigned_by' => Auth::user()->id ?? 0,
             'status_id' => $assignedStatus->id
         ]);
 
@@ -274,7 +275,7 @@ class ComplaintController extends Controller
 
     public function resolve(Request $request, Complaint $complaint)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         if (!$user->isNFO()) {
             abort(403, 'Only NFOs can resolve complaints.');
@@ -316,7 +317,7 @@ class ComplaintController extends Controller
 
     public function revert(Request $request, Complaint $complaint)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         if (!$user->isVM()) {
             abort(403, 'Only VMs can revert complaints to managers.');
@@ -354,7 +355,7 @@ class ComplaintController extends Controller
 
     public function getAssignableUsers(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $complaint = null;
 
         if ($request->has('complaint_id')) {
@@ -368,7 +369,7 @@ class ComplaintController extends Controller
 
     public function history(Request $request)
     {
-        if (!auth()->user() || !auth()->user()->isManager()) {
+        if (!Auth::user() || !Auth::user()->isManager()) {
             return redirect()->route('dashboard')->with('error', 'You are not authorized to view history.');
         }
         $query = \App\Models\Complaint::with(['actions' => function ($q) {
@@ -420,19 +421,50 @@ class ComplaintController extends Controller
     {
         $complaint->load(['client', 'assignedTo', 'actions.user', 'networkType', 'vertical', 'section', 'status']);
 
-        return view('complaints.show', compact('complaint'));
+        // Statuses for assigned user to update
+        $statusOptions = \App\Models\Status::whereIn('name', [
+            'pending_with_vendor', 'pending_with_user', 'in_progress', 'completed'
+        ])->ordered()->get();
+
+        // Show close/assign for manager (or VM if assigned to NFO) when status is completed
+        $showCloseOrAssign = false;
+        $user = Auth::user();
+        if ($complaint->isCompleted()) {
+            if (($user && $user->isManager()) || ($user && $user->isVM() && $complaint->assignedTo && $complaint->assignedTo->isNFO())) {
+                $showCloseOrAssign = true;
+            }
+        }
+        $closeStatus = \App\Models\Status::where('name', 'closed')->first();
+
+        return view('complaints.show', compact('complaint', 'statusOptions', 'showCloseOrAssign', 'closeStatus'));
     }
 
     public function comment(Request $request, Complaint $complaint)
     {
         $request->validate([
             'comment' => 'required|string|max:2000',
+            'status_id' => 'nullable|exists:statuses,id',
         ]);
 
+        // Add comment
         $complaint->comments()->create([
-            'user_id' => auth()->user()->id ?? 0,
+            'user_id' => Auth::user()->id ?? 0,
             'comment' => $request->comment,
         ]);
+
+        // If status_id is present and different, update status and add to history
+        if ($request->filled('status_id') && $complaint->status_id != $request->status_id) {
+            $oldStatus = $complaint->status_id;
+            $complaint->update(['status_id' => $request->status_id]);
+
+            // Create action/history
+            \App\Models\ComplaintAction::create([
+                'complaint_id' => $complaint->id,
+                'user_id' => Auth::user()->id ?? 0,
+                'action' => \App\Models\Status::find($request->status_id)->name,
+                'description' => $request->comment,
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Comment added successfully.');
     }
