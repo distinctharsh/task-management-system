@@ -17,13 +17,11 @@ class UserController extends Controller
         if (!auth()->user() || !auth()->user()->isManager()) {
             return redirect()->route('home')->with('error', 'Access denied.');
         }
-        $perPage = $request->get('per_page', 10);
-        if ($perPage === 'all') {
-            $users = User::all();
-        } else {
-            $users = User::paginate((int) $perPage);
-        }
-        return view('users.index', compact('users', 'perPage'));
+        $users = User::with('role')->get();
+        $perPage = 'all';
+        $roles = Role::all();
+        $verticals = Vertical::all();
+        return view('users.index', compact('users', 'perPage', 'roles', 'verticals'));
     }
 
 
@@ -64,5 +62,32 @@ class UserController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', 'User deleted successfully.');
+    }
+
+    public function store(Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'username'     => 'required|string|max:50|unique:users',
+            'full_name'    => 'required|string|max:100',
+            'password'     => 'required|string|min:6|confirmed',
+            'role_id'      => 'required|exists:roles,id',
+            'vertical_id'  => 'nullable|exists:verticals,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('users.index')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        User::create([
+            'username'    => $request->username,
+            'full_name'   => $request->full_name,
+            'password'    => \Hash::make($request->password),
+            'role_id'     => $request->role_id,
+            'vertical_id' => $request->vertical_id,
+        ]);
+
+        return redirect()->route('users.index')->with('success', 'User created successfully!');
     }
 }

@@ -362,6 +362,9 @@ class ComplaintController extends Controller
 
     public function history(Request $request)
     {
+        if (!auth()->user() || !auth()->user()->isManager()) {
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to view history.');
+        }
         $query = \App\Models\Complaint::with(['actions' => function ($q) {
             $q->latest()->limit(1);
         }, 'actions.user']);

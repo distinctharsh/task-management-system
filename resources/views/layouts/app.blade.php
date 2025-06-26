@@ -72,6 +72,11 @@
             box-shadow: 0 0 0 2px #e9ecef;
             /* Matches timeline color */
         }
+
+
+        #usersTable_filter{
+            float: right;
+        }
     </style>
 </head>
 

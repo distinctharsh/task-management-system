@@ -76,8 +76,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/assignable-users', [ComplaintController::class, 'getAssignableUsers'])->name('api.assignable-users');
     
     Route::resource('users', UserController::class);
-    Route::get('/create-user', [AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/create-user', [AuthController::class, 'register']);
 });
 
 Route::get('/api/complaints/lookup', [App\Http\Controllers\ComplaintController::class, 'lookup'])->name('api.complaints.lookup');

@@ -125,11 +125,15 @@
                                             @elseif(auth()->user()->isNFO())
                                                 @if($complaint->assigned_to === auth()->user()->id)
                                                     @if($complaint->assigned_to === auth()->user()->id && !$complaint->isClosed())
-                                                        <button type="button" class="btn btn-sm btn-success"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#resolveModal{{ $complaint->id }}">
-                                                            Resolve
-                                                        </button>
+                                                        {{--
+                                                        @if($complaint->assigned_to === auth()->user()->id && !$complaint->isClosed())
+                                                            <button type="button" class="btn btn-sm btn-success"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#resolveModal{{ $complaint->id }}">
+                                                                Resolve
+                                                            </button>
+                                                        @endif
+                                                        --}}
                                                     @endif
 
                                                     @if($complaint->assigned_to === auth()->user()->id && !$complaint->isClosed())
