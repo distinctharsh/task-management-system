@@ -77,12 +77,8 @@ class AuthController extends Controller
             'vertical_id' => $request->vertical_id,
         ]);
 
-        // Log the user in
-        Auth::login($user);
-
-        // Redirect to dashboard
-        return redirect()->intended('dashboard')
-            ->with('success', 'Registration successful!');
+        // Redirect back to create-user with success message
+        return redirect()->route('register')->with('success', 'User created successfully!');
     }
 
     public function logout(Request $request)

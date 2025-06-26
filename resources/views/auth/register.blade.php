@@ -80,8 +80,9 @@
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                Create
+                            <button type="submit" class="btn btn-primary" id="registerSubmitBtn">
+                                <span id="registerBtnText">Create</span>
+                                <span id="registerBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                             </button>
                         </div>
 
@@ -97,3 +98,21 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[action="{{ route('register') }}"]');
+    const btn = document.getElementById('registerSubmitBtn');
+    const btnText = document.getElementById('registerBtnText');
+    const btnSpinner = document.getElementById('registerBtnSpinner');
+    if (form && btn && btnText && btnSpinner) {
+        form.addEventListener('submit', function() {
+            btn.disabled = true;
+            btnText.classList.add('d-none');
+            btnSpinner.classList.remove('d-none');
+        });
+    }
+});
+</script>
+@endpush
