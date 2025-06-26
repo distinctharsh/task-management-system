@@ -227,7 +227,7 @@
     <!-- Scripts -->
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script>
-    window.ALLOWED_IPS = ['10.1.64.189', '127.0.0.1', '::1', '10.1.64.186'];
+    window.ALLOWED_IPS = @json(config('app.allowed_ips', []));
     window.USER_IP = '{{ $user_ip ?? request()->ip() }}';
     // console.log('window.USER_IP:', window.USER_IP);
     // alert('window.USER_IP: ' + window.USER_IP);

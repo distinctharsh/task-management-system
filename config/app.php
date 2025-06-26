@@ -123,4 +123,22 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Allowed IPs for Public Access
+    |--------------------------------------------------------------------------
+    |
+    | These IP addresses are allowed to access public features without
+    | authentication, such as complaint history tracking.
+    |
+    */
+
+    'allowed_ips' => [
+        '10.1.64.186',
+        '10.1.64.189',
+        '10.20.41.88',
+        '127.0.0.1',  // localhost
+        '::1',        // IPv6 localhost
+    ],
+
 ];

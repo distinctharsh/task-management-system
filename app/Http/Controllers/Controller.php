@@ -17,4 +17,22 @@ class Controller extends BaseController
     {
         return request()->ip();
     }
+
+    /**
+     * Check if the given IP is allowed for public access.
+     */
+    public static function isIpAllowed($ip = null)
+    {
+        $ip = $ip ?: request()->ip();
+        $allowedIPs = config('app.allowed_ips', []);
+        return in_array($ip, $allowedIPs);
+    }
+
+    /**
+     * Get all allowed IPs for public access.
+     */
+    public static function getAllowedIPs()
+    {
+        return config('app.allowed_ips', []);
+    }
 }
