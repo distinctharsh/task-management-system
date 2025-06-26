@@ -71,13 +71,19 @@ class ComplaintController extends Controller
             $q->where('slug', 'manager');
         })->get();
         $statuses = Status::active()->ordered()->get();
-        $complaints = $query->latest()->paginate(10);
+
+        $perPage = request('per_page', 10);
+        if ($perPage === 'all') {
+            $complaints = $query->latest()->get();
+        } else {
+            $complaints = $query->latest()->paginate((int) $perPage)->appends(request()->query());
+        }
 
         foreach ($complaints as $complaint) {
             $complaint->assignableUsers = $user->getAssignableUsers($complaint);
         }
 
-        return view('complaints.index', compact('complaints', 'managers', 'statuses'));
+        return view('complaints.index', compact('complaints', 'managers', 'statuses', 'perPage'));
     }
 
 

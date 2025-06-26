@@ -17,29 +17,25 @@
                 <h5 class="card-title mb-0">All Tickets</h5>
             </div>
             <div class="card-body">
-                <!-- Search and Filter Section -->
-                <div class="row mb-3 align-items-center">
-                    <div class="col-md-8">
-                        <form method="GET" action="{{ route('complaints.index') }}" class="d-flex gap-2">
-                            <input type="text" name="search" class="form-control" placeholder="Search by reference or description..." value="{{ request('search') }}">
-                            <select name="status" class="form-select">
-                                <option value="">All Statuses</option>
-                                @foreach($statuses as $status)
-                                    <option value="{{ $status->id }}" {{ request('status') == $status->id ? 'selected' : '' }}>
-                                        {{ $status->display_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <button type="submit" class="btn btn-outline-primary">Search</button>
-                        </form>
-                    </div>
-                    <div class="col-md-4 d-flex justify-content-end">
-                        <div id="dtExportButtons"></div>
-                    </div>
-                </div>
-
                 <div class="table-responsive">
-                    <table id="complaintsTable" class="table table-hover">
+                    <form method="GET" action="{{ route('complaints.index') }}" class="mb-3">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-auto">
+                                {{-- <label for="per_page" class="form-label mb-0">Show</label> --}}
+                                <select name="per_page" id="per_page" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
+                                    <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
+                                    <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                                    <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                                    <option value="all" {{ request('per_page') == 'all' ? 'selected' : '' }}>All</option>
+                                </select>
+                                {{-- <span class="text-muted ms-1">entries per page</span> --}}
+                            </div>
+                            <div class="col ms-auto">
+                                <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ request('search') }}" onchange="this.form.submit()">
+                            </div>
+                        </div>
+                    </form>
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Reference</th>
@@ -184,7 +180,6 @@
                                     </div>
 
                                     <!-- Resolve Modal -->
-                                    <!-- Resolve Modal -->
                                     <div class="modal fade" id="resolveModal{{ $complaint->id }}" tabindex="-1">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -195,16 +190,12 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <div class="modal-body">
-
-                                                        <!-- Closed Checkbox -->
                                                         <div class="form-check mb-3">
                                                             <input class="form-check-input" type="checkbox" value="1" id="markClosed{{ $complaint->id }}" name="mark_closed">
                                                             <label class="form-check-label" for="markClosed{{ $complaint->id }}">
                                                                 Mark as Closed
                                                             </label>
                                                         </div>
-
-                                                        <!-- Status Dropdown -->
                                                         <div class="mb-3">
                                                             <label for="status_id" class="form-label">Status *</label>
                                                             <select class="form-select @error('status_id') is-invalid @enderror"
@@ -219,8 +210,6 @@
                                                             <div class="invalid-feedback">{{ $message }}</div>
                                                             @enderror
                                                         </div>
-
-                                                        <!-- Remarks Textarea -->
                                                         <div class="mb-3">
                                                             <label for="description" class="form-label">Remarks / Solution *</label>
                                                             <textarea class="form-control" name="description" rows="3" required></textarea>
@@ -234,9 +223,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-
-
 
                                     <!-- Revert Modal -->
                                     <div class="modal fade" id="revertModal{{ $complaint->id }}" tabindex="-1">
@@ -285,78 +271,11 @@
                         </tbody>
                     </table>
                 </div>
-
                 <div class="d-flex justify-content-center mt-4">
-                    {{ $complaints->links('vendor.pagination.custom') }} <!-- Your custom view -->
+                    {{ $complaints instanceof \Illuminate\Pagination\LengthAwarePaginator ? $complaints->links('vendor.pagination.custom') : '' }}
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script src="{{ asset('js/jquery-3.6.0.min.js') }}"></script>
-<script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('js/dataTables.bootstrap5.min.js') }}"></script>
-<script src="{{ asset('js/dataTables.responsive.min.js') }}"></script>
-<script src="{{ asset('js/responsive.bootstrap5.min.js') }}"></script>
-<script src="{{ asset('js/dataTables.buttons.min.js') }}"></script>
-<script src="{{ asset('js/buttons.bootstrap5.min.js') }}"></script>
-<script src="{{ asset('js/jszip.min.js') }}"></script>
-<script src="{{ asset('js/pdfmake.min.js') }}"></script>
-<script src="{{ asset('js/vfs_fonts.js') }}"></script>
-<script src="{{ asset('js/buttons.html5.min.js') }}"></script>
-<script src="{{ asset('js/buttons.print.min.js') }}"></script>
-<script>
-$(document).ready(function() {
-    var table = $('#complaintsTable').DataTable({
-        responsive: true,
-        order: [[0, 'desc']],
-        pageLength: 10,
-        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search records",
-            lengthMenu: "Show _MENU_ entries",
-            paginate: {
-                first: "First",
-                last: "Last",
-                next: "Next",
-                previous: "Previous"
-            }
-        },
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'copy',
-                text: '<i class="fas fa-copy"></i> Copy',
-                className: 'btn btn-sm btn-outline-primary me-1'
-            },
-            {
-                extend: 'csv',
-                text: '<i class="fas fa-file-csv"></i> CSV',
-                className: 'btn btn-sm btn-outline-success me-1'
-            },
-            {
-                extend: 'excel',
-                text: '<i class="fas fa-file-excel"></i> Excel',
-                className: 'btn btn-sm btn-outline-success me-1'
-            },
-            {
-                extend: 'pdf',
-                text: '<i class="fas fa-file-pdf"></i> PDF',
-                className: 'btn btn-sm btn-outline-danger me-1'
-            },
-            {
-                extend: 'print',
-                text: '<i class="fas fa-print"></i> Print',
-                className: 'btn btn-sm btn-outline-secondary'
-            }
-        ]
-    });
-    // Move DataTable buttons to custom div
-    table.buttons().container().appendTo('#dtExportButtons');
-});
-</script>
-@endpush
 @endsection
