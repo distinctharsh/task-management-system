@@ -90,7 +90,7 @@
                     <li>• Full access to all ticket</li>
                     <li>• Can manage user accounts</li>
                     <li>• Can assign ticket to users</li>
-                    <li>• Can update complaint statuses</li>
+                    <li>• Can update ticket statuses</li>
                 </ul>
             </div>
         </div>

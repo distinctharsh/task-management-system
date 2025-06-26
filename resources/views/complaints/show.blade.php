@@ -5,9 +5,9 @@
     @guest
     <div class="alert alert-info d-flex justify-content-between align-items-center">
         <div>
-            <strong>Guest Notice:</strong> You are viewing complaint details as a guest. For more actions, please log in.
+            <strong>Guest Notice:</strong> You are viewing ticket details as a guest. For more actions, please log in.
         </div>
-        <button class="btn btn-outline-primary btn-sm" onclick="openSearchModal()">Search Another Complaint</button>
+        <button class="btn btn-outline-primary btn-sm" onclick="openSearchModal()">Search Another Ticket</button>
     </div>
     <script>
     function openSearchModal() {
@@ -60,7 +60,7 @@
             <!-- Complaint Details Card -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Complaint Details</h5>
+                    <h5 class="mb-0">Ticket Details</h5>
                     @auth
                                                             @if(auth()->user()->isManager())
                     <a href="{{ route('complaints.edit', $complaint) }}" class="btn btn-sm btn-outline-primary">

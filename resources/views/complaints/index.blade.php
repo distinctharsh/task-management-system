@@ -272,7 +272,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="10" class="text-center">No complaints found.</td>
+                                <td colspan="10" class="text-center">No Ticket found.</td>
                             </tr>
                             @endforelse
                         </tbody>

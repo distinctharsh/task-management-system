@@ -198,7 +198,7 @@
                 <div class="modal-body">
                     <form id="searchTicketForm" autocomplete="off">
                         <div class="mb-3">
-                            <label for="reference_number" class="form-label">Complaint Reference Number</label>
+                            <label for="reference_number" class="form-label">Ticket Reference Number</label>
                             <input type="text" class="form-control" id="reference_number" name="reference_number" required>
                         </div>
                         <div id="searchError" class="alert alert-danger d-none"></div>
@@ -209,12 +209,12 @@
         </div>
     </div>
 
-    <!-- Complaint Details Modal -->
+    <!-- Ticket Details Modal -->
     <div class="modal fade" id="complaintDetailsModal" tabindex="-1" aria-labelledby="complaintDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="complaintDetailsModalLabel">Complaint Details</h5>
+                    <h5 class="modal-title" id="complaintDetailsModalLabel">Ticket Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="complaintDetailsBody">
@@ -243,6 +243,15 @@
         let searchTicketModal, complaintDetailsModal;
         if (searchTicketModalElement) {
             searchTicketModal = new bootstrap.Modal(searchTicketModalElement);
+
+            // Always remove backdrop when searchTicketModal is closed
+            searchTicketModalElement.addEventListener('hidden.bs.modal', function () {
+                // Remove any remaining modal backdrop
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+            });
         }
         if (complaintDetailsModalElement) {
             complaintDetailsModal = new bootstrap.Modal(complaintDetailsModalElement);
@@ -302,12 +311,12 @@
                                 });
                             }
                         } else {
-                            searchError.textContent = (data && data.error) ? data.error : 'Complaint not found.';
+                            searchError.textContent = (data && data.error) ? data.error : 'Ticket not found.';
                             searchError.classList.remove('d-none');
                         }
                     })
                     .catch(() => {
-                        searchError.textContent = 'Complaint not found.';
+                        searchError.textContent = 'Ticket not found.';
                         searchError.classList.remove('d-none');
                     });
             });

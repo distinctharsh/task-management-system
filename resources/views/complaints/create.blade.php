@@ -120,7 +120,7 @@
 
                     <!-- Complaint Description (Full Width) -->
                     <div class="mb-3">
-                        <label for="description" class="form-label">Complaint Description</label>
+                        <label for="description" class="form-label">Ticket Description</label>
                         <textarea class="form-control @error('description') is-invalid @enderror"
                             id="description" name="description" rows="3" required>{{ old('description') }}</textarea>
                         @error('description')

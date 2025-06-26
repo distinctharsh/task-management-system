@@ -33,7 +33,7 @@ Route::get('/home', function () {
     return view('welcome');
 })->name('home');
 
-// Public complaint routes
+// Public ticket routes
 Route::get('/complaints/create', [ComplaintController::class, 'create'])->name('complaints.create');
 Route::post('/complaints', [ComplaintController::class, 'store'])->name('complaints.store');
 
