@@ -5,7 +5,7 @@
     <div class="col-md-12 mb-4">
         <div class="d-flex justify-content-between align-items-center">
             <h2>Tickets</h2>
-            <a href="{{ route('complaints.create') }}" class="btn btn-primary">Create New Ticket</a>
+            {{-- <a href="{{ route('complaints.create') }}" class="btn btn-primary">Create New Ticket</a> --}}
         </div>
     </div>
 </div>
@@ -108,7 +108,7 @@
                                         @endif
 
                                         @elseif(auth()->user()->isVM())
-                                            @if($complaint->isPending() || $complaint->assigned_to === auth()->user()->id)
+                                            @if($complaint->isUnassigned() || $complaint->assigned_to === auth()->user()->id)
                                                 <button type="button" class="btn btn-sm btn-primary"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#assignModal{{ $complaint->id }}">
@@ -160,6 +160,9 @@
                                                             <label for="assigned_to" class="form-label">Assign To</label>
                                                             <select class="form-select" name="assigned_to" required>
                                                                 <option value="">Select User</option>
+                                                                @foreach($complaint->assignableUsers as $user)
+                                                                    <option value="{{ $user->id }}">{{ $user->full_name }} ({{ strtoupper($user->role->name) }})</option>
+                                                                @endforeach
                                                             </select>
                                                         </div>
                                                         <div class="mb-3">

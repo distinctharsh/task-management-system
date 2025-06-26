@@ -40,37 +40,27 @@
                         <div class="col-md-3">
                             <div class="card bg-warning text-white mb-4">
                                 <div class="card-body">
-                                    <h5 class="card-title">Pending Complaints</h5>
-                                    <h2 class="mb-0">{{ $pendingComplaints }}</h2>
+                                    <h5 class="card-title">Unassigned</h5>
+                                    <h2 class="mb-0">{{ $unassignedComplaints }}</h2>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="card bg-success text-white mb-4">
                                 <div class="card-body">
-                                    <h5 class="card-title">Resolved Complaints</h5>
-                                    <h2 class="mb-0">{{ $resolvedComplaints }}</h2>
+                                    <h5 class="card-title">Completed</h5>
+                                    <h2 class="mb-0">{{ $completedComplaints }}</h2>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="card bg-info text-white mb-4">
                                 <div class="card-body">
-                                    <h5 class="card-title">In Progress</h5>
-                                    <h2 class="mb-0">{{ $inProgressComplaints }}</h2>
+                                    <h5 class="card-title">Assign to Me</h5>
+                                    <h2 class="mb-0">{{ $assignToMeComplaints }}</h2>
                                 </div>
                             </div>
                         </div>
-                        @if(auth()->user()->isManager())
-                            <div class="col-md-3">
-                                <div class="card bg-dark text-white mb-4">
-                                    <div class="card-body">
-                                        <h5 class="card-title">In Reverted</h5>
-                                        <h2 class="mb-0">{{ $inRevertedComplaints }}</h2>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
                     </div>
 
                     <!-- Today's Complaints -->
@@ -122,8 +112,49 @@
                                                         <td>{{ $complaint->created_at->format('Y-m-d H:i') }}</td>
                                                         <td>
                                                             <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-sm btn-primary">View</a>
+                                                            @auth
+                                                                @if((auth()->user()->isManager() || auth()->user()->isVM()) && (!$complaint->assigned_to || $complaint->assigned_to == 0))
+                                                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#assignModal{{ $complaint->id }}">
+                                                                        Assign
+                                                                    </button>
+                                                                @endif
+                                                            @endauth
                                                         </td>
                                                     </tr>
+                                                    @if((auth()->user()->isManager() || auth()->user()->isVM()) && (!$complaint->assigned_to || $complaint->assigned_to == 0))
+                                                    <div class="modal fade" id="assignModal{{ $complaint->id }}" tabindex="-1" aria-labelledby="assignModalLabel{{ $complaint->id }}" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <form action="{{ route('complaints.assign', $complaint) }}" method="POST">
+                                                                    @csrf
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="assignModalLabel{{ $complaint->id }}">Assign Ticket {{ $complaint->reference_number }}</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <div class="mb-3">
+                                                                            <label for="assigned_to{{ $complaint->id }}" class="form-label">Assign To</label>
+                                                                            <select class="form-select" name="assigned_to" id="assigned_to{{ $complaint->id }}" required>
+                                                                                <option value="">Select User</option>
+                                                                                @foreach($complaint->assignableUsers as $user)
+                                                                                    <option value="{{ $user->id }}">{{ $user->full_name }} ({{ strtoupper($user->role->name) }})</option>
+                                                                                @endforeach
+                                                                            </select>
+                                                                        </div>
+                                                                        <div class="mb-3">
+                                                                            <label for="description{{ $complaint->id }}" class="form-label">Remarks</label>
+                                                                            <textarea class="form-control" name="description" id="description{{ $complaint->id }}" rows="3" required></textarea>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                        <button type="submit" class="btn btn-primary">Assign</button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @endif
                                                 @empty
                                                     <tr>
                                                         <td colspan="10" class="text-center">No complaints today.</td>
@@ -136,8 +167,6 @@
                             </div>
                         </div>
                     </div>
-
-
 
                 </div>
             </div>
@@ -153,7 +182,7 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/jquery-3.6.0.min.js') }}"></script>
+{{-- <script src="{{ asset('js/jquery-3.6.0.min.js') }}"></script> --}}  <!-- Removed duplicate jQuery -->
 <script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('js/dataTables.bootstrap5.min.js') }}"></script>
 <script src="{{ asset('js/dataTables.responsive.min.js') }}"></script>

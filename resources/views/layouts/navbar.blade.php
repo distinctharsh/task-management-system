@@ -20,9 +20,11 @@
   <a class="nav-link {{ request()->routeIs('complaints.index') ? 'active fw-bold text-primary' : '' }}" href="{{ route('complaints.index') }}">Tickets</a>
 </li>
 
+@if(auth()->user()->isManager())
 <li class="nav-item mt-1">
   <a class="nav-link {{ request()->routeIs('complaints.history') ? 'active fw-bold text-primary' : '' }}" href="{{ route('complaints.history') }}">History</a>
 </li>
+@endif
 
 @if(auth()->user()->isManager())
 <li class="nav-item mt-1">

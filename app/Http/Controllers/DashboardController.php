@@ -40,19 +40,31 @@ class DashboardController extends Controller
             }
 
             // Get status IDs from the Status table
-            $statusIds = Status::whereIn('name', ['pending', 'resolved', 'in_progress', 'reverted'])
-                ->pluck('id', 'name');
+            $statusIds = Status::whereIn('name', [
+                'unassigned',
+                'assigned',
+                'pending_with_vendor',
+                'pending_with_user',
+                'assign_to_me',
+                'completed',
+                'closed'
+            ])->pluck('id', 'name');
 
             // Final data
+            $todayComplaints = (clone $baseQuery)->with(['client', 'networkType', 'vertical', 'status', 'assignedTo'])->whereDate('created_at', today())->get();
+            foreach ($todayComplaints as $complaint) {
+                $complaint->assignableUsers = $user->getAssignableUsers($complaint);
+            }
             $data = [
                 'totalComplaints' => (clone $baseQuery)->count(),
-                'pendingComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('pending'))->count(),
-                'resolvedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('resolved'))->count(),
-                'inProgressComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('in_progress'))->count(),
-                'inRevertedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('reverted'))->count(),
-                'todayComplaints' => (clone $baseQuery)->with(['client', 'networkType', 'vertical', 'status'])
-                    ->whereDate('created_at', today())
-                    ->get(),
+                'unassignedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('unassigned'))->count(),
+                'assignedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('assigned'))->count(),
+                'pendingWithVendorComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('pending_with_vendor'))->count(),
+                'pendingWithUserComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('pending_with_user'))->count(),
+                'assignToMeComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('assign_to_me'))->count(),
+                'completedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('completed'))->count(),
+                'closedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('closed'))->count(),
+                'todayComplaints' => $todayComplaints,
             ];
             
             // Remove the old recentComplaints section from the view
@@ -63,24 +75,28 @@ class DashboardController extends Controller
             Log::error('Dashboard error: ' . $e->getMessage());
             return view('dashboard', [
                 'totalComplaints' => 0,
-                'pendingComplaints' => 0,
-                'resolvedComplaints' => 0,
-                'inProgressComplaints' => 0,
-                'inRevertedComplaints' => 0,
-                'recentComplaints' => collect()
+                'unassignedComplaints' => 0,
+                'assignedComplaints' => 0,
+                'pendingWithVendorComplaints' => 0,
+                'pendingWithUserComplaints' => 0,
+                'assignToMeComplaints' => 0,
+                'completedComplaints' => 0,
+                'closedComplaints' => 0,
+                'todayComplaints' => collect()
             ])->with('error', 'There was an error loading the dashboard. Please try again.');
         }
     }
 
-
-
     public function getStatusColorAttribute()
     {
         return [
-            'pending' => 'warning',
-            'in_progress' => 'info',
-            'resolved' => 'success',
-            'rejected' => 'danger'
+            'unassigned' => 'warning',
+            'assigned' => 'info',
+            'pending_with_vendor' => 'primary',
+            'pending_with_user' => 'primary',
+            'assign_to_me' => 'info',
+            'completed' => 'success',
+            'closed' => 'secondary',
         ][$this->status] ?? 'secondary';
     }
 

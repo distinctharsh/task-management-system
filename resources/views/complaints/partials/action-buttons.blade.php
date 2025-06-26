@@ -1,5 +1,5 @@
 @if(auth()->user()->isManager() || auth()->user()->isVM())
-@if($complaint->isPending())
+@if($complaint->isUnassigned())
 <button type="button" class="btn btn-primary me-2 mb-2" data-bs-toggle="modal" data-bs-target="#assignModal">
   <i class="bi bi-person-plus"></i> Assign
 </button>

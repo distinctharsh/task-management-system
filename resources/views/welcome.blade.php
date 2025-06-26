@@ -164,6 +164,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    @if ($errors->has('username') || $errors->has('password'))
+                        <div class="alert alert-danger">
+                            {{ $errors->first('username') ?: $errors->first('password') }}
+                        </div>
+                    @endif
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
                         <div class="mb-3">
@@ -323,6 +328,14 @@
         }
     });
     </script>
+    @if ($errors->has('username') || $errors->has('password'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+            loginModal.show();
+        });
+    </script>
+    @endif
 </body>
 
 </html>

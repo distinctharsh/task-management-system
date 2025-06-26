@@ -5,7 +5,11 @@
     <div class="col-md-12 mb-4">
         <div class="d-flex justify-content-between align-items-center">
             <h2>Create Ticket</h2>
-            <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
+            @auth
+                <a href="{{ route('complaints.index') }}" class="btn btn-secondary">Back</a>
+            @else
+                <a href="/home" class="btn btn-secondary">Back</a>
+            @endauth
         </div>
     </div>
 </div>

@@ -31,7 +31,14 @@ class ComplaintController extends Controller
         if ($user) {
             if ($user->isManager()) {
                 // Manager: See all active complaints
-                $activeStatusIds = Status::whereIn('name', ['pending', 'assigned', 'in_progress', 'reverted'])->pluck('id');
+                $activeStatusIds = Status::whereIn('name', [
+                    'unassigned',
+                    'assigned',
+                    'pending_with_vendor',
+                    'pending_with_user',
+                    'assign_to_me',
+                    'completed'
+                ])->pluck('id');
                 $query->whereIn('status_id', $activeStatusIds);
             } elseif ($user->isVM()) {
                 // VM: Only complaints matching user's vertical
@@ -66,6 +73,10 @@ class ComplaintController extends Controller
         $statuses = Status::active()->ordered()->get();
         $complaints = $query->latest()->paginate(10);
 
+        foreach ($complaints as $complaint) {
+            $complaint->assignableUsers = $user->getAssignableUsers($complaint);
+        }
+
         return view('complaints.index', compact('complaints', 'managers', 'statuses'));
     }
 
@@ -92,8 +103,8 @@ class ComplaintController extends Controller
             'intercom' => 'required|string|max:255',
         ]);
 
-        // Get pending status
-        $pendingStatus = Status::where('name', 'pending')->first();
+        // Get unassigned status
+        $unassignedStatus = Status::where('name', 'unassigned')->first();
 
         // 🔢 Generate CMP-YYYYMMDD### reference number
         $date = Carbon::now()->format('Ymd');
@@ -105,7 +116,7 @@ class ComplaintController extends Controller
             'client_id' => auth()->user()->id ?? 0,
             'description' => $validated['description'],
             'priority' => $validated['priority'],
-            'status_id' => $pendingStatus->id,
+            'status_id' => $unassignedStatus->id,
             'network_type_id' => $validated['network_type_id'],
             'vertical_id' => $validated['vertical_id'],
             'section_id' => $validated['section_id'],
@@ -315,7 +326,7 @@ class ComplaintController extends Controller
         ]);
 
         // Get reverted status
-        $revertedStatus = Status::where('name', 'reverted')->first();
+        $revertedStatus = Status::where('name', 'assign_to_me')->first();
 
         $complaint->update([
             'assigned_to' => $validated['assigned_to'],

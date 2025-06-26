@@ -8,30 +8,43 @@
       <li class="mb-4 position-relative ps-4">
         <span class="position-absolute top-0 start-0 translate-middle p-2 bg-{{ $action->action === 'resolved' ? 'success' : ($action->action === 'reverted' ? 'warning' : 'primary') }} border border-light rounded-circle" style="margin-top: 11px;"></span>
         <div class="ms-3">
-          <h6 class="mb-1">{{ ucfirst($action->action) }}</h6>
-          <div class="text-muted small mb-1">
-            <i class="bi bi-person"></i>
-            @if ($action->user && $action->user_id != 0)
-            {{ $action->user->full_name }}
-            @else
-            Guest User
-            @endif
-            &nbsp;|&nbsp;
-            <i class="bi bi-clock"></i> {{ $action->created_at->format('M d, Y h:i A') }}
-          </div>
-          <div>{{ $action->description }}</div>
-          @if($action->assigned_to)
-            <div class="text-muted small mt-1">
-              <i class="bi bi-person-plus"></i> Assigned To:
-              @php $assignedUser = \App\Models\User::find($action->assigned_to); @endphp
-              {{ $assignedUser ? $assignedUser->full_name : 'Unknown User' }}
+          @php
+            $assignedUser = $action->assigned_to ? \App\Models\User::find($action->assigned_to) : null;
+          @endphp
+          @if(in_array($action->action, ['assigned', 'reassigned']) && $assignedUser)
+            <div class="fw-semibold mb-1">Assigned to '{{ strtolower($assignedUser->role->name ?? 'user') }}'</div>
+            <div class="mb-1">{{ $assignedUser->full_name }}</div>
+            <div class="mb-1">{{ $action->description }}</div>
+            <div class="text-muted small">
+              {{ $action->user ? $action->user->full_name : 'Guest User' }}
+              &nbsp;|&nbsp;
+              {{ $action->created_at->format('M d, Y h:i A') }}
             </div>
-          @endif
-          @if($action->action === 'resolved' && $action->resolution)
-          <div class="mt-2">
-            <strong>Resolution:</strong>
-            <div class="alert alert-success mb-0">{{ $action->resolution }}</div>
-          </div>
+          @else
+            <h6 class="mb-1">{{ ucfirst($action->action) }}</h6>
+            <div class="text-muted small mb-1">
+              <i class="bi bi-person"></i>
+              @if ($action->user && $action->user_id != 0)
+              {{ $action->user->full_name }}
+              @else
+              Guest User
+              @endif
+              &nbsp;|&nbsp;
+              <i class="bi bi-clock"></i> {{ $action->created_at->format('M d, Y h:i A') }}
+            </div>
+            <div>{{ $action->description }}</div>
+            @if($action->assigned_to)
+              <div class="text-muted small mt-1">
+                <i class="bi bi-person-plus"></i> Assigned To:
+                {{ $assignedUser ? $assignedUser->full_name : 'Unknown User' }}
+              </div>
+            @endif
+            @if($action->action === 'resolved' && $action->resolution)
+            <div class="mt-2">
+              <strong>Resolution:</strong>
+              <div class="alert alert-success mb-0">{{ $action->resolution }}</div>
+            </div>
+            @endif
           @endif
         </div>
       </li>

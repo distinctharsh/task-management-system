@@ -3,12 +3,12 @@
 @section('content')
 <div class="container-xxl">
     @guest
-    <div class="alert alert-info d-flex justify-content-between align-items-center">
+    {{-- <div class="alert alert-info d-flex justify-content-between align-items-center">
         <div>
             <strong>Guest Notice:</strong> You are viewing ticket details as a guest. For more actions, please log in.
         </div>
         <button class="btn btn-outline-primary btn-sm" onclick="openSearchModal()">Search Another Ticket</button>
-    </div>
+    </div> --}}
     <script>
     function openSearchModal() {
         if (window.bootstrap && document.getElementById('searchTicketModal')) {
@@ -161,13 +161,18 @@
                 </div>
                 <div class="card-body">
                     @auth
-                        <form action="{{ route('complaints.comment', $complaint) }}" method="POST" class="mb-4">
-                            @csrf
-                            <div class="mb-3">
-                                <textarea name="comment" class="form-control" rows="3" placeholder="Add a comment..." required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Add Comment</button>
-                        </form>
+                        @if($complaint->canUserComment(auth()->user()))
+                            <form action="{{ route('complaints.comment', $complaint) }}" method="POST" class="mb-4">
+                                @csrf
+                                <div class="mb-3">
+                                    <textarea name="comment" class="form-control" rows="3" placeholder="Add a comment..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add Comment</button>
+                            </form>
+                        @else
+                            <textarea class="form-control" rows="3" placeholder="You are not allowed to comment on this ticket." disabled></textarea>
+                            <button class="btn btn-primary mt-2" disabled>Add Comment</button>
+                        @endif
                     @endauth
 
                     <div class="comments">

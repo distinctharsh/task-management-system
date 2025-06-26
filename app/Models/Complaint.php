@@ -72,9 +72,9 @@ class Complaint extends Model
     }
 
     // Status Check Methods
-    public function isPending()
+    public function isUnassigned()
     {
-        return $this->status && $this->status->name === 'pending';
+        return $this->status && $this->status->name === 'unassigned';
     }
 
     public function isAssigned()
@@ -82,29 +82,29 @@ class Complaint extends Model
         return $this->status && $this->status->name === 'assigned';
     }
 
-    public function isInProgress()
+    public function isPendingWithVendor()
     {
-        return $this->status && $this->status->name === 'in_progress';
+        return $this->status && $this->status->name === 'pending_with_vendor';
     }
 
-    public function isEscalated()
+    public function isPendingWithUser()
     {
-        return $this->status && $this->status->name === 'escalated';
+        return $this->status && $this->status->name === 'pending_with_user';
     }
 
-    public function isResolved()
+    public function isAssignToMe()
     {
-        return $this->status && $this->status->name === 'resolved';
+        return $this->status && $this->status->name === 'assign_to_me';
+    }
+
+    public function isCompleted()
+    {
+        return $this->status && $this->status->name === 'completed';
     }
 
     public function isClosed()
     {
         return $this->status && $this->status->name === 'closed';
-    }
-
-    public function isReverted()
-    {
-        return $this->status && $this->status->name === 'reverted';
     }
 
     // Accessors
@@ -126,21 +126,34 @@ class Complaint extends Model
     // Helper Methods
     public function canBeAssigned()
     {
-        return $this->isPending() || $this->isAssigned();
+        return $this->isUnassigned() || $this->isAssignToMe();
     }
 
-    public function canBeResolved()
+    public function canBeCompleted()
     {
-        return $this->isAssigned() || $this->isInProgress();
+        return $this->isAssigned() || $this->isPendingWithVendor() || $this->isPendingWithUser();
     }
 
     public function canBeClosed()
     {
-        return $this->isResolved();
+        return $this->isCompleted();
     }
 
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function canUserComment($user)
+    {
+        if (!$user) return false;
+
+        // Get all user_ids and assigned_to from assignment actions
+        $actions = $this->actions()->whereIn('action', ['assigned', 'reassigned'])->get();
+        $userIds = $actions->pluck('user_id')->toArray();
+        $assignedToIds = $actions->pluck('assigned_to')->toArray();
+        $relatedUserIds = array_unique(array_merge($userIds, $assignedToIds));
+
+        return in_array($user->id, $relatedUserIds);
     }
 }
