@@ -6,23 +6,8 @@ use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Hash;
 
 
-
-// Temporary route to generate a bcrypt hash (Remove after use!)
-Route::get('/generate-hash/{password?}', function ($password = '123456') {
-    return [
-        'password' => $password,
-        'hash' => Hash::make($password),
-    ];
-});
-
-
-// Public routes
-// Route::get('/', function () {
-//     return view('welcome');
-// });
 
 
 // Redirect root URL to /home

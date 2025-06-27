@@ -292,12 +292,62 @@
 <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    new TomSelect('#status-filter', {
+    // Initialize Tom Select for status filter
+    const statusSelect = new TomSelect('#status-filter', {
         plugins: ['remove_button'],
         placeholder: 'Filter by Status',
         persist: false,
         create: false
     });
+
+    // Handle status parameter from dashboard links
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusParam = urlParams.get('status');
+    const assignedToMeParam = urlParams.get('assigned_to_me');
+    
+    if (statusParam && statusParam !== '') {
+        // Set the status filter value
+        statusSelect.setValue(statusParam);
+        
+        // Update the URL to use the proper status[] format for the form
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.delete('status');
+        newUrl.searchParams.append('status[]', statusParam);
+        
+        // Replace the URL without reloading the page
+        window.history.replaceState({}, '', newUrl);
+    }
+
+    // Handle assigned_to_me parameter from dashboard
+    if (assignedToMeParam === '1') {
+        // Try to select 'assign_to_me' in the status filter (by string or by id)
+        let found = false;
+        // Try string value first
+        if (statusSelect.options['assign_to_me']) {
+            statusSelect.setValue('assign_to_me');
+            found = true;
+        } else {
+            // Try to find the option with display name 'Assign To Me' and select its value
+            const selectEl = document.getElementById('status-filter');
+            if (selectEl) {
+                for (let i = 0; i < selectEl.options.length; i++) {
+                    if (selectEl.options[i].text.toLowerCase().includes('assign to me')) {
+                        statusSelect.setValue(selectEl.options[i].value);
+                        found = true;
+                        break;
+                    }
+                }
+            }
+        }
+        // Add a visual indicator that we're showing "Assigned to Me" complaints
+        const cardHeader = document.querySelector('.card-header');
+        if (cardHeader && found) {
+            const indicator = document.createElement('div');
+            indicator.className = 'alert alert-info alert-sm mb-0';
+            indicator.innerHTML = '<i class="bi bi-person-check"></i> Showing complaints assigned to you';
+            cardHeader.appendChild(indicator);
+        }
+    }
 });
 </script>
 @endpush

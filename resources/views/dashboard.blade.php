@@ -30,36 +30,44 @@
                     <!-- Statistics (from controller variables) -->
                     <div class="row mb-4">
                         <div class="col-md-3">
-                            <div class="card bg-primary text-white mb-4">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total Complaints</h5>
-                                    <h2 class="mb-0">{{ $totalComplaints }}</h2>
+                            <a href="{{ route('complaints.index') }}" class="text-decoration-none">
+                                <div class="card bg-primary text-white mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Total Complaints</h5>
+                                        <h2 class="mb-0">{{ $totalComplaints }}</h2>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-warning text-white mb-4">
-                                <div class="card-body">
-                                    <h5 class="card-title">Unassigned</h5>
-                                    <h2 class="mb-0">{{ $unassignedComplaints }}</h2>
+                            <a href="{{ route('complaints.index', ['status' => $unassignedStatusId ?? '']) }}" class="text-decoration-none">
+                                <div class="card bg-warning text-white mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Unassigned</h5>
+                                        <h2 class="mb-0">{{ $unassignedComplaints }}</h2>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-success text-white mb-4">
-                                <div class="card-body">
-                                    <h5 class="card-title">Completed</h5>
-                                    <h2 class="mb-0">{{ $completedComplaints }}</h2>
+                            <a href="{{ route('complaints.index', ['status' => $completedStatusId ?? '']) }}" class="text-decoration-none">
+                                <div class="card bg-success text-white mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Completed</h5>
+                                        <h2 class="mb-0">{{ $completedComplaints }}</h2>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                         <div class="col-md-3">
-                            <div class="card bg-info text-white mb-4">
-                                <div class="card-body">
-                                    <h5 class="card-title">Assign to Me</h5>
-                                    <h2 class="mb-0">{{ $assignToMeComplaints }}</h2>
+                            <a href="{{ route('complaints.index', ['assigned_to_me' => '1']) }}" class="text-decoration-none">
+                                <div class="card bg-info text-white mb-4">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Assign to Me</h5>
+                                        <h2 class="mb-0">{{ $assignToMeComplaints }}</h2>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     </div>
 

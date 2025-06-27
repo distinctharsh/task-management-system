@@ -61,10 +61,13 @@ class DashboardController extends Controller
                 'assignedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('assigned'))->count(),
                 'pendingWithVendorComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('pending_with_vendor'))->count(),
                 'pendingWithUserComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('pending_with_user'))->count(),
-                'assignToMeComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('assign_to_me'))->count(),
+                'assignToMeComplaints' => (clone $baseQuery)->where('assigned_to', $user->id)->count(),
                 'completedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('completed'))->count(),
                 'closedComplaints' => (clone $baseQuery)->where('status_id', $statusIds->get('closed'))->count(),
                 'todayComplaints' => $todayComplaints,
+                'unassignedStatusId' => $statusIds->get('unassigned'),
+                'completedStatusId' => $statusIds->get('completed'),
+                'assignToMeStatusId' => null,
             ];
             
             // Remove the old recentComplaints section from the view
@@ -82,7 +85,10 @@ class DashboardController extends Controller
                 'assignToMeComplaints' => 0,
                 'completedComplaints' => 0,
                 'closedComplaints' => 0,
-                'todayComplaints' => collect()
+                'todayComplaints' => collect(),
+                'unassignedStatusId' => null,
+                'completedStatusId' => null,
+                'assignToMeStatusId' => null,
             ])->with('error', 'There was an error loading the dashboard. Please try again.');
         }
     }

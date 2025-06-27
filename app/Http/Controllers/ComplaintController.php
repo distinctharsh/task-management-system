@@ -63,9 +63,19 @@ class ComplaintController extends Controller
         }
 
         // Status filter
-        $status = request('status');
+        $status = (array) request('status'); // Always cast to array
         if (!empty($status)) {
-            $query->where('status_id', $status);
+            $assignToMeStatusId = \App\Models\Status::where('name', 'assign_to_me')->value('id');
+            if (in_array('assign_to_me', $status) || ($assignToMeStatusId && in_array($assignToMeStatusId, $status))) {
+                $query->where('assigned_to', auth()->user()->id);
+            } else {
+                $query->whereIn('status_id', $status);
+            }
+        }
+
+        // Assign to me filter (from dashboard)
+        if (request('assigned_to_me') == '1') {
+            $query->where('assigned_to', $user->id);
         }
 
         $managers = User::whereHas('role', function ($q) {
@@ -170,6 +180,30 @@ class ComplaintController extends Controller
     {
         $this->authorize('update', $complaint);
 
+        // If this is a close request (only status_id and description are present)
+        if ($request->has('status_id') && $request->has('description') && count($request->all()) <= 5) { // 5: _method, _token, status_id, description, (optionally assigned_to)
+            $validated = $request->validate([
+                'status_id' => 'required|exists:statuses,id',
+                'description' => 'required|string',
+            ]);
+
+            $complaint->update([
+                'status_id' => $validated['status_id'],
+            ]);
+
+            // Create action record
+            ComplaintAction::create([
+                'complaint_id' => $complaint->id,
+                'user_id' => Auth::user()->id ?? 0,
+                'action' => 'closed',
+                'description' => $validated['description'],
+            ]);
+
+            return redirect()->route('complaints.index')
+                ->with('success', 'Complaint closed successfully.');
+        }
+
+        // Default: full update (edit page)
         $validated = $request->validate([
             'network_type_id' => 'required|exists:network_types,id',
             'description' => 'required|string',
