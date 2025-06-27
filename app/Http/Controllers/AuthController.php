@@ -43,44 +43,6 @@ class AuthController extends Controller
         ])->withInput();
     }
 
-    public function showRegisterForm()
-    {
-        $verticals = Vertical::all();
-        $roles = Role::all();
-        return view('auth.register', compact('verticals', 'roles'));
-    }
-
-    public function register(Request $request)
-    {
-        // Validate the request
-        $validator = Validator::make($request->all(), [
-            'username'     => 'required|string|max:50|unique:users',
-            'full_name'    => 'required|string|max:100',
-            'password'     => 'required|string|min:6|confirmed',
-            'role_id'      => 'required|exists:roles,id',
-            'vertical_id'  => 'nullable|exists:verticals,id', // Nullable if it's not required
-        ]);
-
-        // Check if validation fails
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        // Create the user
-        $user = User::create([
-            'username'    => $request->username,
-            'full_name'   => $request->full_name,
-            'password'    => Hash::make($request->password),
-            'role_id'     => $request->role_id,
-            'vertical_id' => $request->vertical_id,
-        ]);
-
-        // Redirect back to create-user with success message
-        return redirect()->route('register')->with('success', 'User created successfully!');
-    }
-
     public function logout(Request $request)
     {
         Auth::logout();
