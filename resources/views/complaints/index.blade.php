@@ -30,6 +30,13 @@
                                 </select>
                                 {{-- <span class="text-muted ms-1">entries per page</span> --}}
                             </div>
+                            <div class="col-auto">
+                                <select name="status[]" id="status-filter" class="form-select" multiple onchange="this.form.submit()">
+                                    @foreach($statuses as $status)
+                                        <option value="{{ $status->id }}" {{ collect(request('status'))->contains($status->id) ? 'selected' : '' }}>{{ $status->display_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <div class="col ms-auto">
                                 <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ request('search') }}" onchange="this.form.submit()">
                             </div>
@@ -92,6 +99,7 @@
                                         @endif --}}
 
                                         @if(auth()->user()->isManager())
+                                        @if($complaint->status->name != 'completed' && $complaint->status->name != 'closed')
                                         <button type="button" class="btn btn-sm btn-primary"
                                             data-bs-toggle="modal"
                                             data-bs-target="#assignModal{{ $complaint->id }}">
@@ -102,15 +110,16 @@
                                             @endif
                                         </button>
                                         @endif
+                                        @endif
 
                                         @elseif(auth()->user()->isVM())
-                                            @if($complaint->isUnassigned() || $complaint->assigned_to === auth()->user()->id)
+                                            @if(($complaint->isUnassigned() || $complaint->assigned_to === auth()->user()->id) && $complaint->status->name != 'completed' && $complaint->status->name != 'closed')
                                                 <button type="button" class="btn btn-sm btn-primary"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#assignModal{{ $complaint->id }}">
                                                     Assign
                                                 </button>
-                                                @if($complaint->assigned_to === auth()->user()->id)
+                                                @if($complaint->assigned_to === auth()->user()->id && $complaint->status->name != 'completed' && $complaint->status->name != 'closed')
                                                     <button type="button" class="btn btn-sm btn-warning"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#revertModal{{ $complaint->id }}">
@@ -132,7 +141,7 @@
                                                         --}}
                                                     @endif
 
-                                                    @if($complaint->assigned_to === auth()->user()->id && !$complaint->isClosed())
+                                                    @if($complaint->assigned_to === auth()->user()->id && !$complaint->isCompleted() && !$complaint->isClosed())
                                                         <button type="button" class="btn btn-sm btn-primary"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#assignModal{{ $complaint->id }}">
@@ -240,10 +249,8 @@
                                                             <select class="form-select" name="assigned_to" required>
                                                                 <option value="">Select Manager</option>
                                                                 @foreach($managers as $manager)
-                                                                <option value="{{ $manager->id }}"
-                                                                    @if($manager->id == $complaint->assigned_by) selected @endif>
-                                                                    {{ $manager->full_name }}
-                                                                    @if($manager->id == $complaint->assigned_by) (Original Assigner) @endif
+                                                                <option value="{{ $manager->id }}" @if($manager->id == $complaint->assigned_by) selected @endif>
+                                                                    {{ $manager->full_name }}@if($manager->id == $complaint->assigned_by) (Original Assigner)@endif
                                                                 </option>
                                                                 @endforeach
                                                             </select>
@@ -279,3 +286,18 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    new TomSelect('#status-filter', {
+        plugins: ['remove_button'],
+        placeholder: 'Filter by Status',
+        persist: false,
+        create: false
+    });
+});
+</script>
+@endpush

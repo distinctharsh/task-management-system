@@ -257,7 +257,7 @@
                 complaintDetailsModal = new bootstrap.Modal(complaintDetailsModalElement);
             }
             trackProgressBtn.addEventListener('click', function() {
-                alert('Your IP address is: ' + window.USER_IP); // Show user's IP
+                // alert('Your IP address is: ' + window.USER_IP);
                 if (window.ALLOWED_IPS.includes(window.USER_IP)) {
                     window.location.href = trackProgressBtn.dataset.historyUrl;
                 } else {
@@ -328,6 +328,14 @@
             }
         });
     </script>
+    @if($errors->has('username') || $errors->has('password'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+            loginModal.show();
+        });
+    </script>
+    @endif
 </body>
 
 </html>

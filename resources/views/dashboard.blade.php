@@ -113,7 +113,7 @@
                                                         <td>
                                                             <a href="{{ route('complaints.show', $complaint) }}" class="btn btn-sm btn-primary">View</a>
                                                             @auth
-                                                                @if((auth()->user()->isManager() || auth()->user()->isVM()) && (!$complaint->assigned_to || $complaint->assigned_to == 0))
+                                                                @if((auth()->user()->isManager() || auth()->user()->isVM()) && (!$complaint->assigned_to || $complaint->assigned_to == 0) && $complaint->status->name != 'completed' && $complaint->status->name != 'closed')
                                                                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#assignModal{{ $complaint->id }}">
                                                                         Assign
                                                                     </button>

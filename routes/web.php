@@ -52,7 +52,6 @@ Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])->nam
 
 // Authentication routes
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 });
 
@@ -86,5 +85,14 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/api/complaints/lookup', [App\Http\Controllers\ComplaintController::class, 'lookup'])->name('api.complaints.lookup');
 Route::get('/complaints/track', [App\Http\Controllers\ComplaintController::class, 'track'])->name('complaints.track');
+
+// Redirect any GET /login access to /home
+Route::get('/login', function () {
+    return redirect('/home');
+});
+// Redirect any GET or POST /register access to /home
+Route::match(['get', 'post'], '/register', function () {
+    return redirect('/home');
+});
 
 require __DIR__ . '/auth.php';

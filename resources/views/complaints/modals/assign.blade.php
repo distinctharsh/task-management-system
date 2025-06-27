@@ -1,4 +1,4 @@
-<div class="modal fade" id="assignModal" tabindex="-1">
+<div class="modal fade" id="assignModal{{ $complaint->id }}" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <form action="{{ route('complaints.assign', $complaint) }}" method="POST">
@@ -9,8 +9,8 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label for="assigned_to" class="form-label">Assign To</label>
-            <select class="form-select" name="assigned_to" required>
+            <label for="assigned_to{{ $complaint->id }}" class="form-label">Assign To</label>
+            <select class="form-select" name="assigned_to" id="assigned_to{{ $complaint->id }}" required>
               <option value="">Select User</option>
             </select>
           </div>

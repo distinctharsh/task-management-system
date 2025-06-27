@@ -44,9 +44,22 @@
             </div>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <a href="{{ url()->previous() }}" class="btn btn-outline-secondary me-2 mb-2">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
+            @if(auth()->check())
+                <a href="{{ route('complaints.index') }}" onclick="
+                    event.preventDefault();
+                    if (document.referrer && document.referrer !== window.location.href) {
+                        window.history.back();
+                    } else {
+                        window.location.href = '{{ route('complaints.index') }}';
+                    }
+                    return false;" class="btn btn-outline-secondary me-2 mb-2">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            @else
+                <a href="{{ url()->previous() }}" class="btn btn-outline-secondary me-2 mb-2">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            @endif
 
             @auth
             @include('complaints.partials.action-buttons')
@@ -163,12 +176,35 @@
                 </div>
                 <div class="card-body">
                     @auth
-                        @if($complaint->canUserComment(auth()->user()))
+                        @php $isManager = auth()->user() && auth()->user()->isManager(); @endphp
+                        @if($complaint->isClosed())
+                            <textarea class="form-control" rows="3" placeholder="Comments are disabled for this ticket as it is closed." disabled></textarea>
+                            <button class="btn btn-primary mt-2" disabled>Add Comment</button>
+                        @elseif($complaint->isCompleted() && $isManager)
+                            <form action="{{ route('complaints.update', $complaint) }}" method="POST" class="mb-4">
+                                @csrf
+                                @method('PUT')
+                                <div class="mb-3">
+                                    <label for="close_status_id" class="form-label">Status <span class="text-danger">*</span></label>
+                                    <select name="status_id" id="close_status_id" class="form-select" required>
+                                        <option value="{{ $closeStatus->id }}">Closed</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <textarea name="description" class="form-control" rows="2" placeholder="Remarks (required)" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success">Close</button>
+                                <a href="#" class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#assignModal{{ $complaint->id }}">Assign</a>
+                            </form>
+                        @elseif($complaint->isCompleted() && !$isManager)
+                            <textarea class="form-control" rows="3" placeholder="Comments are disabled for this ticket as it is completed." disabled></textarea>
+                            <button class="btn btn-primary mt-2" disabled>Add Comment</button>
+                        @elseif($complaint->canUserComment(auth()->user()))
                             <form action="{{ route('complaints.comment', $complaint) }}" method="POST" class="mb-4">
                                 @csrf
                                 {{-- Debugging --}}
                                 {{-- <div>auth id: {{ auth()->id() }}, assigned_to: {{ $complaint->assigned_to }}, isManager: {{ auth()->user() && auth()->user()->isManager() ? 'yes' : 'no' }}</div> --}}
-                                @if(auth()->check() && $complaint->assigned_to && auth()->user()->id == $complaint->assigned_to && !(auth()->user()->isManager()) && !$complaint->isCompleted())
+                                @if(auth()->check() && $complaint->assigned_to && auth()->user()->id == $complaint->assigned_to && !$isManager && !$complaint->isCompleted())
                                     <div class="mb-3">
                                         <label for="status_id" class="form-label">Status <span class="text-danger">*</span></label>
                                         <select name="status_id" id="status_id" class="form-select" required>
@@ -272,8 +308,37 @@
     </div>
 </div>
 
-<!-- Include Modals -->
-@include('complaints.modals.assign')
+<!-- Assign Modal (inline) -->
+<div class="modal fade" id="assignModal{{ $complaint->id }}" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ route('complaints.assign', $complaint) }}" method="POST">
+        @csrf
+        <div class="modal-header">
+          <h5 class="modal-title">Assign Ticket</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="assigned_to{{ $complaint->id }}" class="form-label">Assign To</label>
+            <select class="form-select" name="assigned_to" id="assigned_to{{ $complaint->id }}" required>
+              <option value="">Select User</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="description" class="form-label">Remarks</label>
+            <textarea class="form-control" name="description" rows="3" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 @include('complaints.modals.resolve')
 @include('complaints.modals.revert')
 
@@ -291,8 +356,7 @@
             try {
                 const response = await fetch(`/api/assignable-users?complaint_id={{ $complaint->id }}`);
                 const users = await response.json();
-                const select = document.querySelector('#assignModal select[name="assigned_to"]');
-
+                const select = document.querySelector('#assignModal{{ $complaint->id }} select[name="assigned_to"]');
                 if (select) {
                     select.innerHTML = '<option value="">Select User</option>';
                     users.forEach(user => {
@@ -305,12 +369,10 @@
                 }
             } catch (error) {
                 console.error('Error fetching assignable users:', error);
-                alert('Failed to load assignable users. Please try again.');
             }
         }
-
         // Set up modal event listeners
-        const assignModal = document.getElementById('assignModal');
+        const assignModal = document.getElementById('assignModal{{ $complaint->id }}');
         if (assignModal) {
             assignModal.addEventListener('show.bs.modal', fetchAssignableUsers);
         }

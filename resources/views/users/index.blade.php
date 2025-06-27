@@ -25,6 +25,7 @@
                             <th>Full Name</th>
                             <th>Username</th>
                             <th>Role</th>
+                            <th>Vertical</th>
                             <th>Created At</th>
                             <th>Actions</th>
                         </tr>
@@ -48,6 +49,7 @@
                                     {{ $user->role->name ?? 'No Role' }}
                                 </span>
                             </td>
+                            <td>{{ $user->vertical ? $user->vertical->name : '-' }}</td>
                             <td>{{ $user->created_at->format('M d, Y H:i') }}</td>
                             <td>
                                 <div class="btn-group">
