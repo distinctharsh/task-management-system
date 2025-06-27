@@ -78,8 +78,8 @@
             <div class="d-flex justify-content-center gap-3">
                 <a href="{{ route('complaints.create') }}" class="btn btn-light btn-lg">Create Ticket</a>
                 @auth
-<a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-lg">Dashboard</a>
-@endauth
+                <a href="{{ route('dashboard') }}" class="btn btn-outline-light btn-lg">Dashboard</a>
+                @endauth
 
                 @guest
                 <button type="button" class="btn btn-outline-light btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal">
@@ -108,8 +108,8 @@
                             <h3 class="h5 mb-3">Track Progress</h3>
                             <p class="text-muted mb-0">Monitor the status of your tickets in real-time.</p>
                             <div class="mt-3">
-                                <button type="button" class="btn btn-outline-primary btn-sm" 
-                                    id="trackProgressBtn" 
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                    id="trackProgressBtn"
                                     data-dashboard-url="{{ route('dashboard') }}"
                                     data-history-url="{{ route('complaints.history') }}">
                                     Track Ticket
@@ -164,11 +164,6 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    @if ($errors->has('username') || $errors->has('password'))
-                        <div class="alert alert-danger">
-                            {{ $errors->first('username') ?: $errors->first('password') }}
-                        </div>
-                    @endif
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
                         <div class="mb-3">
@@ -232,110 +227,107 @@
     <!-- Scripts -->
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script>
-    window.ALLOWED_IPS = @json(config('app.allowed_ips', []));
-    window.USER_IP = '{{ $user_ip ?? request()->ip() }}';
-    // console.log('window.USER_IP:', window.USER_IP);
-    // alert('window.USER_IP: ' + window.USER_IP);
+        window.ALLOWED_IPS = @json(config('app.allowed_ips', []));
+        window.USER_IP = '{{ $user_ip ?? request()->ip() }}';
+        // console.log('window.USER_IP:', window.USER_IP);
+        // alert('window.USER_IP: ' + window.USER_IP);
     </script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const trackProgressBtn = document.getElementById('trackProgressBtn');
-        const searchTicketModalElement = document.getElementById('searchTicketModal');
-        const complaintDetailsModalElement = document.getElementById('complaintDetailsModal');
-        const complaintDetailsBody = document.getElementById('complaintDetailsBody');
-        const searchTicketForm = document.getElementById('searchTicketForm');
-        const searchError = document.getElementById('searchError');
-        let searchTicketModal, complaintDetailsModal;
-        if (searchTicketModalElement) {
-            searchTicketModal = new bootstrap.Modal(searchTicketModalElement);
-
-            // Always remove backdrop when searchTicketModal is closed
-            searchTicketModalElement.addEventListener('hidden.bs.modal', function () {
-                // Remove any remaining modal backdrop
-                const backdrop = document.querySelector('.modal-backdrop');
-                if (backdrop) {
-                    backdrop.remove();
-                }
-            });
-        }
-        if (complaintDetailsModalElement) {
-            complaintDetailsModal = new bootstrap.Modal(complaintDetailsModalElement);
-        }
-        trackProgressBtn.addEventListener('click', function() {
-            if (window.ALLOWED_IPS.includes(window.USER_IP)) {
-                window.location.href = trackProgressBtn.dataset.historyUrl;
-            } else {
-                if (searchTicketModal) {
-                    searchTicketModal.show();
-                }
-            }
-        });
-        if (searchTicketForm) {
-            searchTicketForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                searchError.classList.add('d-none');
-                const refInput = document.getElementById('reference_number');
-                if (!refInput) {
-                    searchError.textContent = 'Reference number input not found.';
-                    searchError.classList.remove('d-none');
-                    return;
-                }
-                const ref = refInput.value.trim();
-                if (!ref) {
-                    searchError.textContent = 'Please enter a complaint reference number.';
-                    searchError.classList.remove('d-none');
-                    return;
-                }
-                fetch(`/api/complaints/lookup?reference_number=${encodeURIComponent(ref)}`)
-                    .then(async res => {
-                        let data;
-                        try { data = await res.json(); } catch { data = {}; }
-                        if (res.ok && data.success) {
-                            let html = `<div class='mb-2'><strong>Reference:</strong> ${data.complaint.reference_number}</div>`;
-                            html += `<div class='mb-2'><strong>Status:</strong> <span class='badge bg-${data.complaint.status_color}'>${data.complaint.status}</span></div>`;
-                            html += `<div class='mb-2'><strong>Priority:</strong> <span class='badge bg-${data.complaint.priority_color}'>${data.complaint.priority}</span></div>`;
-                            html += `<div class='mb-2'><strong>Created By:</strong> ${data.complaint.created_by}</div>`;
-                            html += `<div class='mb-2'><strong>Created At:</strong> ${data.complaint.created_at}</div>`;
-                            html += `<div class='mb-2'><strong>Network:</strong> ${data.complaint.network}</div>`;
-                            html += `<div class='mb-2'><strong>Vertical:</strong> ${data.complaint.vertical}</div>`;
-                            html += `<div class='mb-2'><strong>Description:</strong><br><span class='text-muted'>${data.complaint.description}</span></div>`;
-                            complaintDetailsBody.innerHTML = html;
-                            // Hide search modal and cleanup
-                            const searchModal = bootstrap.Modal.getInstance(document.getElementById('searchTicketModal'));
-                            if (searchModal) {
-                                searchModal.hide();
-                                // Wait for modal to be hidden
-                                searchModal._element.addEventListener('hidden.bs.modal', function() {
-                                    // Remove backdrop
-                                    const backdrop = document.querySelector('.modal-backdrop');
-                                    if (backdrop) {
-                                        backdrop.remove();
-                                    }
-                                    // Show complaint details modal
-                                    complaintDetailsModal.show();
-                                });
-                            }
-                        } else {
-                            searchError.textContent = (data && data.error) ? data.error : 'Ticket not found.';
-                            searchError.classList.remove('d-none');
-                        }
-                    })
-                    .catch(() => {
-                        searchError.textContent = 'Ticket not found.';
-                        searchError.classList.remove('d-none');
-                    });
-            });
-        }
-    });
-    </script>
-    @if ($errors->has('username') || $errors->has('password'))
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-            loginModal.show();
+            const trackProgressBtn = document.getElementById('trackProgressBtn');
+            const searchTicketModalElement = document.getElementById('searchTicketModal');
+            const complaintDetailsModalElement = document.getElementById('complaintDetailsModal');
+            const complaintDetailsBody = document.getElementById('complaintDetailsBody');
+            const searchTicketForm = document.getElementById('searchTicketForm');
+            const searchError = document.getElementById('searchError');
+            let searchTicketModal, complaintDetailsModal;
+            if (searchTicketModalElement) {
+                searchTicketModal = new bootstrap.Modal(searchTicketModalElement);
+
+                // Always remove backdrop when searchTicketModal is closed
+                searchTicketModalElement.addEventListener('hidden.bs.modal', function() {
+                    // Remove any remaining modal backdrop
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                });
+            }
+            if (complaintDetailsModalElement) {
+                complaintDetailsModal = new bootstrap.Modal(complaintDetailsModalElement);
+            }
+            trackProgressBtn.addEventListener('click', function() {
+                alert('Your IP address is: ' + window.USER_IP); // Show user's IP
+                if (window.ALLOWED_IPS.includes(window.USER_IP)) {
+                    window.location.href = trackProgressBtn.dataset.historyUrl;
+                } else {
+                    if (searchTicketModal) {
+                        searchTicketModal.show();
+                    }
+                }
+            });
+            if (searchTicketForm) {
+                searchTicketForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    searchError.classList.add('d-none');
+                    const refInput = document.getElementById('reference_number');
+                    if (!refInput) {
+                        searchError.textContent = 'Reference number input not found.';
+                        searchError.classList.remove('d-none');
+                        return;
+                    }
+                    const ref = refInput.value.trim();
+                    if (!ref) {
+                        searchError.textContent = 'Please enter a complaint reference number.';
+                        searchError.classList.remove('d-none');
+                        return;
+                    }
+                    fetch(`/api/complaints/lookup?reference_number=${encodeURIComponent(ref)}`)
+                        .then(async res => {
+                            let data;
+                            try {
+                                data = await res.json();
+                            } catch {
+                                data = {};
+                            }
+                            if (res.ok && data.success) {
+                                let html = `<div class='mb-2'><strong>Reference:</strong> ${data.complaint.reference_number}</div>`;
+                                html += `<div class='mb-2'><strong>Status:</strong> <span class='badge bg-${data.complaint.status_color}'>${data.complaint.status}</span></div>`;
+                                html += `<div class='mb-2'><strong>Priority:</strong> <span class='badge bg-${data.complaint.priority_color}'>${data.complaint.priority}</span></div>`;
+                                html += `<div class='mb-2'><strong>Created By:</strong> ${data.complaint.created_by}</div>`;
+                                html += `<div class='mb-2'><strong>Created At:</strong> ${data.complaint.created_at}</div>`;
+                                html += `<div class='mb-2'><strong>Network:</strong> ${data.complaint.network}</div>`;
+                                html += `<div class='mb-2'><strong>Vertical:</strong> ${data.complaint.vertical}</div>`;
+                                html += `<div class='mb-2'><strong>Description:</strong><br><span class='text-muted'>${data.complaint.description}</span></div>`;
+                                complaintDetailsBody.innerHTML = html;
+                                // Hide search modal and cleanup
+                                const searchModal = bootstrap.Modal.getInstance(document.getElementById('searchTicketModal'));
+                                if (searchModal) {
+                                    searchModal.hide();
+                                    // Wait for modal to be hidden
+                                    searchModal._element.addEventListener('hidden.bs.modal', function() {
+                                        // Remove backdrop
+                                        const backdrop = document.querySelector('.modal-backdrop');
+                                        if (backdrop) {
+                                            backdrop.remove();
+                                        }
+                                        // Show complaint details modal
+                                        complaintDetailsModal.show();
+                                    });
+                                }
+                            } else {
+                                searchError.textContent = (data && data.error) ? data.error : 'Ticket not found.';
+                                searchError.classList.remove('d-none');
+                            }
+                        })
+                        .catch(() => {
+                            searchError.textContent = 'Ticket not found.';
+                            searchError.classList.remove('d-none');
+                        });
+                });
+            }
         });
     </script>
-    @endif
 </body>
 
 </html>

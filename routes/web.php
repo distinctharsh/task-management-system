@@ -30,7 +30,13 @@ Route::redirect('/', '/home');
 
 // Show welcome view at /home
 Route::get('/home', function () {
-    return view('welcome');
+    // Get public IP (check for proxy headers first)
+    $publicIp = request()->header('X-Forwarded-For') ?? request()->ip();
+    // If X-Forwarded-For has multiple IPs, take the first one
+    if (strpos($publicIp, ',') !== false) {
+        $publicIp = trim(explode(',', $publicIp)[0]);
+    }
+    return view('welcome', ['user_ip' => $publicIp]);
 })->name('home');
 
 // Public ticket routes
@@ -74,7 +80,7 @@ Route::middleware('auth')->group(function () {
 
     // API routes for dynamic content
     Route::get('/api/assignable-users', [ComplaintController::class, 'getAssignableUsers'])->name('api.assignable-users');
-    
+
     Route::resource('users', UserController::class);
 });
 

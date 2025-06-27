@@ -369,9 +369,6 @@ class ComplaintController extends Controller
 
     public function history(Request $request)
     {
-        if (!Auth::user() || !Auth::user()->isManager()) {
-            return redirect()->route('dashboard')->with('error', 'You are not authorized to view history.');
-        }
         $query = \App\Models\Complaint::with(['actions' => function ($q) {
             $q->latest()->limit(1);
         }, 'actions.user']);
@@ -417,13 +414,17 @@ class ComplaintController extends Controller
     }
 
 
+
     public function show(Complaint $complaint)
     {
         $complaint->load(['client', 'assignedTo', 'actions.user', 'networkType', 'vertical', 'section', 'status']);
 
         // Statuses for assigned user to update
         $statusOptions = \App\Models\Status::whereIn('name', [
-            'pending_with_vendor', 'pending_with_user', 'in_progress', 'completed'
+            'pending_with_vendor',
+            'pending_with_user',
+            'in_progress',
+            'completed'
         ])->ordered()->get();
 
         // Show close/assign for manager (or VM if assigned to NFO) when status is completed
