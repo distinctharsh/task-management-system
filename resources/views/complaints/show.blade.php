@@ -194,14 +194,20 @@
                                 <div class="mb-3">
                                     <textarea name="description" class="form-control" rows="2" placeholder="Remarks (required)" required></textarea>
                                 </div>
-                                <button type="submit" class="btn btn-success">Close</button>
+                                <button type="submit" class="btn btn-success close-submit-btn">
+                                    <span class="btn-text">Close</span>
+                                    <span class="btn-loading d-none">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Closing...
+                                    </span>
+                                </button>
                                 <a href="#" class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#assignModal{{ $complaint->id }}">Assign</a>
                             </form>
                         @elseif($complaint->isCompleted() && !$isManager)
                             <textarea class="form-control" rows="3" placeholder="Comments are disabled for this ticket as it is completed." disabled></textarea>
                             <button class="btn btn-primary mt-2" disabled>Add Comment</button>
                         @elseif($complaint->canUserComment(auth()->user()))
-                            <form action="{{ route('complaints.comment', $complaint) }}" method="POST" class="mb-4">
+                            <form action="{{ route('complaints.comment', $complaint) }}" method="POST" class="mb-4 comment-form" id="commentForm{{ $complaint->id }}">
                                 @csrf
                                 {{-- Debugging --}}
                                 {{-- <div>auth id: {{ auth()->id() }}, assigned_to: {{ $complaint->assigned_to }}, isManager: {{ auth()->user() && auth()->user()->isManager() ? 'yes' : 'no' }}</div> --}}
@@ -219,7 +225,13 @@
                                 <div class="mb-3">
                                     <textarea name="comment" class="form-control" rows="3" placeholder="Add a comment..." required></textarea>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Add Comment</button>
+                                <button type="submit" class="btn btn-primary comment-submit-btn" data-complaint-id="{{ $complaint->id }}">
+                                    <span class="btn-text">Add Comment</span>
+                                    <span class="btn-loading d-none">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Submitting...
+                                    </span>
+                                </button>
                             </form>
                         @else
                             <textarea class="form-control" rows="3" placeholder="You are not allowed to comment on this ticket." disabled></textarea>
@@ -310,7 +322,7 @@
 <div class="modal fade" id="assignModal{{ $complaint->id }}" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="{{ route('complaints.assign', $complaint) }}" method="POST">
+      <form action="{{ route('complaints.assign', $complaint) }}" method="POST" class="assign-form">
         @csrf
         <div class="modal-header">
           <h5 class="modal-title">Assign Ticket</h5>
@@ -330,7 +342,13 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Assign</button>
+          <button type="submit" class="btn btn-primary assign-submit-btn">
+            <span class="btn-text">Assign</span>
+            <span class="btn-loading d-none">
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Assigning...
+            </span>
+          </button>
         </div>
       </form>
     </div>
@@ -347,6 +365,125 @@
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function(tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Handle comment form submission to prevent double-clicking
+        const commentForms = document.querySelectorAll('.comment-form');
+        commentForms.forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = form.querySelector('.comment-submit-btn');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                
+                // Disable button and show loading state
+                submitBtn.disabled = true;
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
+                
+                // Re-enable button after 5 seconds as a fallback (in case of errors)
+                setTimeout(function() {
+                    if (submitBtn.disabled) {
+                        submitBtn.disabled = false;
+                        btnText.classList.remove('d-none');
+                        btnLoading.classList.add('d-none');
+                    }
+                }, 5000);
+            });
+        });
+
+        // Handle close form submission to prevent double-clicking
+        const closeButtons = document.querySelectorAll('.close-submit-btn');
+        closeButtons.forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                const btnText = btn.querySelector('.btn-text');
+                const btnLoading = btn.querySelector('.btn-loading');
+                
+                // Disable button and show loading state
+                btn.disabled = true;
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
+                
+                // Re-enable button after 5 seconds as a fallback (in case of errors)
+                setTimeout(function() {
+                    if (btn.disabled) {
+                        btn.disabled = false;
+                        btnText.classList.remove('d-none');
+                        btnLoading.classList.add('d-none');
+                    }
+                }, 5000);
+            });
+        });
+
+        // Handle assign form submission to prevent double-clicking
+        const assignForms = document.querySelectorAll('.assign-form');
+        assignForms.forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = form.querySelector('.assign-submit-btn');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                
+                // Disable button and show loading state
+                submitBtn.disabled = true;
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
+                
+                // Re-enable button after 5 seconds as a fallback (in case of errors)
+                setTimeout(function() {
+                    if (submitBtn.disabled) {
+                        submitBtn.disabled = false;
+                        btnText.classList.remove('d-none');
+                        btnLoading.classList.add('d-none');
+                    }
+                }, 5000);
+            });
+        });
+
+        // Handle resolve form submission to prevent double-clicking
+        const resolveForms = document.querySelectorAll('.resolve-form');
+        resolveForms.forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = form.querySelector('.resolve-submit-btn');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                
+                // Disable button and show loading state
+                submitBtn.disabled = true;
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
+                
+                // Re-enable button after 5 seconds as a fallback (in case of errors)
+                setTimeout(function() {
+                    if (submitBtn.disabled) {
+                        submitBtn.disabled = false;
+                        btnText.classList.remove('d-none');
+                        btnLoading.classList.add('d-none');
+                    }
+                }, 5000);
+            });
+        });
+
+        // Handle revert form submission to prevent double-clicking
+        const revertForms = document.querySelectorAll('.revert-form');
+        revertForms.forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = form.querySelector('.revert-submit-btn');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                
+                // Disable button and show loading state
+                submitBtn.disabled = true;
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
+                
+                // Re-enable button after 5 seconds as a fallback (in case of errors)
+                setTimeout(function() {
+                    if (submitBtn.disabled) {
+                        submitBtn.disabled = false;
+                        btnText.classList.remove('d-none');
+                        btnLoading.classList.add('d-none');
+                    }
+                }, 5000);
+            });
         });
 
         // Fetch assignable users for modal
@@ -376,6 +513,35 @@
         }
     });
 </script>
+
+<style>
+.comment-submit-btn:disabled,
+.close-submit-btn:disabled,
+.assign-submit-btn:disabled,
+.resolve-submit-btn:disabled,
+.revert-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.comment-submit-btn .btn-loading,
+.close-submit-btn .btn-loading,
+.assign-submit-btn .btn-loading,
+.resolve-submit-btn .btn-loading,
+.revert-submit-btn .btn-loading {
+    display: inline-flex;
+    align-items: center;
+}
+
+.comment-submit-btn .spinner-border,
+.close-submit-btn .spinner-border,
+.assign-submit-btn .spinner-border,
+.resolve-submit-btn .spinner-border,
+.revert-submit-btn .spinner-border {
+    width: 1rem;
+    height: 1rem;
+}
+</style>
 @endpush
 
 

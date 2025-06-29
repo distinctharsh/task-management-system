@@ -24,7 +24,7 @@
                 <h5 class="card-title mb-0">Ticket Information</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('complaints.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('complaints.store') }}" method="POST" enctype="multipart/form-data" class="ticket-create-form">
                     @csrf
 
                     <!-- First Row - User Name and Intercom -->
@@ -147,7 +147,13 @@
                     </div>
 
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Submit Ticket</button>
+                        <button type="submit" class="btn btn-primary ticket-create-submit-btn">
+                            <span class="btn-text">Submit Ticket</span>
+                            <span class="btn-loading d-none">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Submitting...
+                            </span>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -190,3 +196,50 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle ticket creation form submission to prevent double-clicking
+        const ticketCreateForm = document.querySelector('.ticket-create-form');
+        if (ticketCreateForm) {
+            ticketCreateForm.addEventListener('submit', function(e) {
+                const submitBtn = ticketCreateForm.querySelector('.ticket-create-submit-btn');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                
+                // Disable button and show loading state
+                submitBtn.disabled = true;
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
+                
+                // Re-enable button after 10 seconds as a fallback (in case of errors)
+                setTimeout(function() {
+                    if (submitBtn.disabled) {
+                        submitBtn.disabled = false;
+                        btnText.classList.remove('d-none');
+                        btnLoading.classList.add('d-none');
+                    }
+                }, 10000);
+            });
+        }
+    });
+</script>
+
+<style>
+.ticket-create-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.ticket-create-submit-btn .btn-loading {
+    display: inline-flex;
+    align-items: center;
+}
+
+.ticket-create-submit-btn .spinner-border {
+    width: 1rem;
+    height: 1rem;
+}
+</style>
+@endpush

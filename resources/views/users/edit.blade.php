@@ -19,7 +19,7 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('users.update', $user) }}" method="POST">
+                <form action="{{ route('users.update', $user) }}" method="POST" class="user-edit-form">
                     @csrf
                     @method('PUT')
 
@@ -69,7 +69,9 @@
                             {{ $user->id === auth()->user()->id ? 'disabled' : '' }}>
                             <option value="">Select a role</option>
                             @foreach($roles as $role)
-                            <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                                @if($role->slug !== 'admin' && $role->slug !== 'client')
+                                    <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                                @endif
                             @endforeach
                         </select>
                         @error('role_id')
@@ -95,8 +97,12 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            Update User
+                        <button type="submit" class="btn btn-primary user-edit-submit-btn">
+                            <span class="btn-text">Update User</span>
+                            <span class="btn-loading d-none">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Updating...
+                            </span>
                         </button>
                     </div>
                 </form>
@@ -150,3 +156,50 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle user edit form submission to prevent double-clicking
+        const userEditForm = document.querySelector('.user-edit-form');
+        if (userEditForm) {
+            userEditForm.addEventListener('submit', function(e) {
+                const submitBtn = userEditForm.querySelector('.user-edit-submit-btn');
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                
+                // Disable button and show loading state
+                submitBtn.disabled = true;
+                btnText.classList.add('d-none');
+                btnLoading.classList.remove('d-none');
+                
+                // Re-enable button after 10 seconds as a fallback (in case of errors)
+                setTimeout(function() {
+                    if (submitBtn.disabled) {
+                        submitBtn.disabled = false;
+                        btnText.classList.remove('d-none');
+                        btnLoading.classList.add('d-none');
+                    }
+                }, 10000);
+            });
+        }
+    });
+</script>
+
+<style>
+.user-edit-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.user-edit-submit-btn .btn-loading {
+    display: inline-flex;
+    align-items: center;
+}
+
+.user-edit-submit-btn .spinner-border {
+    width: 1rem;
+    height: 1rem;
+}
+</style>
+@endpush

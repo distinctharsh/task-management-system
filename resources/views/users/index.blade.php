@@ -93,7 +93,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form method="POST" action="{{ route('users.store') }}" id="createUserForm">
+        <form method="POST" action="{{ route('users.store') }}" id="createUserForm" class="user-create-form">
           @csrf
           <div class="mb-3">
             <label for="username" class="form-label">Username</label>
@@ -146,9 +146,12 @@
             </select>
           </div>
           <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary" id="registerSubmitBtn">
-              <span id="registerBtnText">Create</span>
-              <span id="registerBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            <button type="submit" class="btn btn-primary user-create-submit-btn">
+              <span class="btn-text">Create</span>
+              <span class="btn-loading d-none">
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Creating...
+              </span>
             </button>
           </div>
         </form>
@@ -178,6 +181,47 @@
 <script>
 $(document).ready(function() {
     $('#usersTable').DataTable();
+    
+    // Handle user creation form submission to prevent double-clicking
+    const userCreateForm = document.querySelector('.user-create-form');
+    if (userCreateForm) {
+        userCreateForm.addEventListener('submit', function(e) {
+            const submitBtn = userCreateForm.querySelector('.user-create-submit-btn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+            
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+            
+            // Re-enable button after 10 seconds as a fallback (in case of errors)
+            setTimeout(function() {
+                if (submitBtn.disabled) {
+                    submitBtn.disabled = false;
+                    btnText.classList.remove('d-none');
+                    btnLoading.classList.add('d-none');
+                }
+            }, 10000);
+        });
+    }
 });
 </script>
+
+<style>
+.user-create-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.user-create-submit-btn .btn-loading {
+    display: inline-flex;
+    align-items: center;
+}
+
+.user-create-submit-btn .spinner-border {
+    width: 1rem;
+    height: 1rem;
+}
+</style>
 @endpush

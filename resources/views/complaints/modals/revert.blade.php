@@ -1,7 +1,7 @@
 <div class="modal fade" id="revertModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="{{ route('complaints.revert', $complaint) }}" method="POST">
+      <form action="{{ route('complaints.revert', $complaint) }}" method="POST" class="revert-form">
         @csrf
         <div class="modal-header">
           <h5 class="modal-title">Revert to Manager</h5>
@@ -15,7 +15,13 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-warning">Revert</button>
+          <button type="submit" class="btn btn-warning revert-submit-btn">
+            <span class="btn-text">Revert</span>
+            <span class="btn-loading d-none">
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Reverting...
+            </span>
+          </button>
         </div>
       </form>
     </div>

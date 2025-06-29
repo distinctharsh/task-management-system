@@ -1,7 +1,7 @@
 <div class="modal fade" id="resolveModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="{{ route('complaints.resolve', $complaint) }}" method="POST">
+      <form action="{{ route('complaints.resolve', $complaint) }}" method="POST" class="resolve-form">
         @csrf
         <div class="modal-header">
           <h5 class="modal-title">Resolve Ticket</h5>
@@ -19,7 +19,13 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success">Resolve</button>
+          <button type="submit" class="btn btn-success resolve-submit-btn">
+            <span class="btn-text">Resolve</span>
+            <span class="btn-loading d-none">
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Resolving...
+            </span>
+          </button>
         </div>
       </form>
     </div>
