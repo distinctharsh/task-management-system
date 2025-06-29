@@ -2,6 +2,15 @@
     $isLoggedIn = auth()->check();
     $homeLabel = $isLoggedIn ? 'Dashboard' : 'Home';
     $homeUrl = $isLoggedIn ? route('dashboard') : route('home');
+    
+    // Define routes that require authentication
+    $authenticatedRoutes = [
+        'complaints.index',
+        'dashboard', 
+        'users.index',
+        'users.edit',
+        'profile.edit'
+    ];
 @endphp
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb stylish-breadcrumb">
@@ -12,12 +21,31 @@
       </a>
     </li>
     @foreach(array_slice($breadcrumbs, 1) as $index => $crumb)
-      @php $label = $crumb['label'] === 'Complaints' ? 'Tickets' : $crumb['label']; @endphp
+      @php 
+        $label = $crumb['label'] === 'Complaints' ? 'Tickets' : $crumb['label'];
+        
+        // Check if this breadcrumb URL corresponds to an authenticated route
+        $isAuthenticatedRoute = false;
+        if ($crumb['url']) {
+            foreach ($authenticatedRoutes as $routeName) {
+                if (strpos($crumb['url'], route($routeName)) === 0) {
+                    $isAuthenticatedRoute = true;
+                    break;
+                }
+            }
+        }
+        
+        $shouldShowLink = $crumb['url'] && (!$isAuthenticatedRoute || $isLoggedIn);
+      @endphp
       @if($loop->last)
         <li class="breadcrumb-item active stylish-active" aria-current="page">{{ $label }}</li>
       @else
         <li class="breadcrumb-item">
-          <a href="{{ $crumb['url'] }}">{{ $label }}</a>
+          @if($shouldShowLink)
+            <a href="{{ $crumb['url'] }}">{{ $label }}</a>
+          @else
+            <span class="text-muted">{{ $label }}</span>
+          @endif
         </li>
       @endif
     @endforeach
