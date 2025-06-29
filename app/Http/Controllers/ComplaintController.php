@@ -58,7 +58,10 @@ class ComplaintController extends Controller
             $search = request('search');
             $query->where(function ($q) use ($search) {
                 $q->where('reference_number', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('vertical', function ($v) use ($search) {
+                        $v->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -379,6 +382,7 @@ class ComplaintController extends Controller
         ComplaintAction::create([
             'complaint_id' => $complaint->id,
             'user_id' => $user->id,
+            'assigned_to' => $validated['assigned_to'],
             'action' => 'reverted',
             'description' => $validated['description']
         ]);

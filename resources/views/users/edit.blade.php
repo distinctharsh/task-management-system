@@ -1,6 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
+@include('layouts.breadcrumbs', [
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('home')],
+        ['label' => 'Users', 'url' => route('users.index')],
+        ['label' => 'Edit', 'url' => null],
+    ]
+])
+
 <div class="row">
     <div class="col-md-12 mb-4">
         <h2>Edit User: {{ $user->full_name }}</h2>
@@ -90,10 +98,6 @@
                         <button type="submit" class="btn btn-primary">
                             Update User
                         </button>
-                    </div>
-
-                    <div class="text-center mt-3">
-                        <a href="{{ route('users.index') }}" class="text-decoration-none">Back to Users</a>
                     </div>
                 </form>
             </div>

@@ -27,7 +27,28 @@
         @endphp
         <span class="position-absolute top-0 start-0 translate-middle p-2 bg-{{ $circleColor }} border border-light rounded-circle" style="margin-top: 11px;"></span>
         <div class="ms-3">
-          @if(in_array($action->action, ['assigned', 'reassigned']) && $action->assigned_to)
+          @if($action->action === 'reverted' && $action->assigned_to)
+            <div class="fw-semibold mb-1">
+              Reverted to
+              <span class="text-primary">{{ $assignedUser ? $assignedUser->full_name : 'Unknown User' }}</span>
+              @if($assignedUser && $assignedUser->role)
+                <span class="text-muted">({{ ucfirst($assignedUser->role->name) }})</span>
+              @endif
+            </div>
+            @if($action->description)
+              <div class="mb-1">{{ $action->description }}</div>
+            @endif
+            <div class="text-muted small mb-1">
+              <i class="bi bi-person"></i>
+              @if ($action->user && $action->user_id != 0)
+                {{ $action->user->full_name }}
+              @else
+                Guest User
+              @endif
+              &nbsp;|&nbsp;
+              <i class="bi bi-clock"></i> {{ $action->created_at->format('M d, Y h:i A') }}
+            </div>
+          @elseif(in_array($action->action, ['assigned', 'reassigned']) && $action->assigned_to)
             {{-- Status Name and Assigned To --}}
             <div class="fw-semibold mb-1">
               {{ ucfirst($action->action) }}

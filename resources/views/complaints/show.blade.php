@@ -23,10 +23,22 @@
     <!-- Header Section -->
     <div class="row mb-4 align-items-center">
         <div class="col-md-8">
+            @php
+                $displayStatus = $complaint->status->display_name ?? 'Unknown';
+                if (
+                    ($complaint->status->name ?? null) === 'assign_to_me'
+                    && auth()->check()
+                    && $complaint->assigned_to == auth()->id()
+                ) {
+                    $displayStatus = 'Assign to Me';
+                } elseif (($complaint->status->name ?? null) === 'assign_to_me') {
+                    $displayStatus = 'Assigned';
+                }
+            @endphp
             <h2 class="fw-bold mb-1">
                 Ticket: <span class="text-primary">{{ $complaint->reference_number }}</span>
                 <span class="badge bg-{{ $complaint->status_color }} ms-2">
-                    {{ $complaint->status->display_name ?? 'Unknown' }}
+                    {{ $displayStatus }}
                 </span>
             </h2>
             <div class="mb-2">
@@ -44,26 +56,16 @@
             </div>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            @if(auth()->check())
-                <a href="{{ route('complaints.index') }}" onclick="
-                    event.preventDefault();
-                    if (document.referrer && document.referrer !== window.location.href) {
-                        window.history.back();
-                    } else {
-                        window.location.href = '{{ route('complaints.index') }}';
-                    }
-                    return false;" class="btn btn-outline-secondary me-2 mb-2">
-                    <i class="bi bi-arrow-left"></i> Back
-                </a>
-            @else
-                <a href="{{ url()->previous() }}" class="btn btn-outline-secondary me-2 mb-2">
-                    <i class="bi bi-arrow-left"></i> Back
-                </a>
-            @endif
-
-            @auth
+            @include('layouts.breadcrumbs', [
+                'breadcrumbs' => [
+                    ['label' => 'Home', 'url' => route('home')],
+                    ['label' => 'Tickets', 'url' => route('complaints.index')],
+                    ['label' => 'Show', 'url' => null],
+                ]
+            ])
+            {{-- @auth
             @include('complaints.partials.action-buttons')
-            @endauth
+            @endauth --}}
         </div>
     </div>
 
@@ -149,7 +151,7 @@
                             <p class="mb-1 fw-semibold"><i class="bi bi-info-circle"></i> Status:</p>
                             <p class="ps-3">
                                 <span class="badge bg-{{ $complaint->status_color }}">
-                                    {{ $complaint->status->display_name ?? 'Unknown' }}
+                                    {{ $displayStatus }}
                                 </span>
                             </p>
                         </div>
@@ -166,8 +168,7 @@
             <!-- Assignment Card -->
             @include('complaints.partials.assignment-card')
 
-
-                     <!-- Comments Card -->
+            <!-- Comments Card -->
             <div class="card shadow-sm">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">Comments
@@ -246,9 +247,6 @@
                     </div>
                 </div>
             </div>
-
-
-            
 
             <!-- Quick Details Card -->
             <div class="card shadow-sm mb-4">

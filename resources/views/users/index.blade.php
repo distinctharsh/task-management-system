@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
+@include('layouts.breadcrumbs', [
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('home')],
+        ['label' => 'Users', 'url' => null],
+    ]
+])
 <div class="container-xxl">
     <div class="row mb-4">
         <div class="col-md-12">
@@ -120,7 +126,9 @@
                 onchange="document.getElementById('verticalBox').style.display = (this.options[this.selectedIndex].text.toLowerCase().includes('vm') || this.options[this.selectedIndex].text.toLowerCase().includes('nfo')) ? 'block' : 'none';">
               <option value="">Select a role</option>
               @foreach($roles as $role)
-                <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                @if($role->slug !== 'admin' && $role->slug !== 'client')
+                    <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
+                @endif
               @endforeach
             </select>
             @error('role_id')

@@ -80,4 +80,11 @@ Route::match(['get', 'post'], '/register', function () {
     return redirect('/home');
 });
 
+
+Route::get('/myip', function() {
+    return request()->ip();
+});
+
+
+
 require __DIR__ . '/auth.php';

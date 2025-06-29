@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
+@include('layouts.breadcrumbs', [
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('home')],
+        ['label' => 'Tickets', 'url' => null],
+    ]
+])
 <div class="row">
     <div class="col-md-12 mb-4">
         <div class="d-flex justify-content-between align-items-center">
@@ -42,11 +48,10 @@
                             </div>
                         </div>
                     </form>
-                    <table class="table table-hover">
+                    <table id="complaintsTable" class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Reference</th>
-                                <!-- <th>Subject</th> -->
                                 <th>Network</th>
                                 <th>Vertical</th>
                                 <th>Status</th>
@@ -62,8 +67,6 @@
                             @forelse($complaints as $complaint)
                             <tr>
                                 <td>{{ $complaint->reference_number }}</td>
-                                <!-- <td>{{ $complaint->subject }}</td> -->
-
                                 <td>{{ $complaint->networkType->name ?? 'N/A' }}</td>
                                 <td>{{ $complaint->vertical->name ?? 'N/A' }}</td>
                                 <td>
