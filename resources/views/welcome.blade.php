@@ -290,17 +290,86 @@
                             } catch {
                                 data = {};
                             }
+                            // Format created_at to 12-hour format with AM/PM
+                            let createdAt = data.complaint.created_at || '';
+                            if (createdAt) {
+                                const d = new Date(createdAt.replace(/-/g, '/'));
+                                if (!isNaN(d.getTime())) {
+                                    const options = { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true };
+                                    createdAt = d.toLocaleString('en-US', options);
+                                }
+                            }
                             if (res.ok && data.success) {
-                                let html = `<div class='mb-2'><strong>Reference:</strong> ${data.complaint.reference_number}</div>`;
-                                html += `<div class='mb-2'><strong>Name:</strong> ${data.complaint.name}</div>`;
-                                html += `<div class='mb-2'><strong>Intercom:</strong> ${data.complaint.intercom}</div>`;
-                                html += `<div class='mb-2'><strong>Issue Type:</strong> ${data.complaint.network}</div>`;
-                                html += `<div class='mb-2'><strong>Section:</strong> ${data.complaint.section}</div>`;
-                                html += `<div class='mb-2'><strong>Vertical:</strong> ${data.complaint.vertical}</div>`;
-                                html += `<div class='mb-2'><strong>Status:</strong> <span class='badge bg-${data.complaint.status_color}'>${data.complaint.status}</span></div>`;
-                                html += `<div class='mb-2'><strong>Priority:</strong> <span class='badge bg-${data.complaint.priority_color}'>${data.complaint.priority}</span></div>`;
-                                html += `<div class='mb-2'><strong>Description:</strong><br><span class='text-muted'>${data.complaint.description}</span></div>`;
-                                html += `<div class='mb-2'><strong>Created At:</strong> ${data.complaint.created_at}</div>`;
+                                let html = `
+                                <div class=\"lookup-modal-unique-v2\">
+                                    <div class=\"lookup-ribbon mb-4\">
+                                        <span><i class=\"bi bi-ticket-detailed me-2\"></i>Reference: <b>${data.complaint.reference_number}</b></span>
+                                    </div>
+                                    <div class=\"lookup-infobar d-flex justify-content-between align-items-center mb-4 p-3 rounded shadow-sm\">
+                                        <div class=\"d-flex align-items-center gap-2\">
+                                            <i class=\"bi bi-info-circle-fill text-primary fs-5\"></i>
+                                            <span class=\"fw-bold\">Status:</span>
+                                            <span class=\"badge rounded-pill px-3 py-2\" style=\"background:#e3f0ff; color:#0d6efd; font-weight:600;\">${data.complaint.status}</span>
+                                        </div>
+                                        <div class=\"d-flex align-items-center gap-2\">
+                                            <i class=\"bi bi-lightning-charge-fill text-warning fs-5\"></i>
+                                            <span class=\"fw-bold\">Priority:</span>
+                                            <span class=\"badge rounded-pill px-3 py-2\" style=\"background:#fff8e1; color:#ff9800; font-weight:600;\">${data.complaint.priority}</span>
+                                        </div>
+                                    </div>
+                                    <div class=\"row g-4 mb-3\">
+                                        <div class=\"col-12 col-md-6\">
+                                            <div class=\"section-heading mb-2\"><i class=\"bi bi-person-lines-fill me-1\"></i>User Info</div>
+                                            <div class=\"card border-0 shadow-sm h-100\">
+                                                <div class=\"card-body p-3\">
+                                                    <div class=\"mb-2\"><span class=\"fw-semibold\"><i class=\"bi bi-person-circle me-2\"></i>Name:</span> <span class=\"text-dark\">${data.complaint.name || 'N/A'}</span></div>
+                                                    <div class=\"mb-2\"><span class=\"fw-semibold\"><i class=\"bi bi-telephone me-2\"></i>Intercom:</span> <span class=\"text-dark\">${data.complaint.intercom || 'N/A'}</span></div>
+                                                    <div class=\"mb-2\"><span class=\"fw-semibold\"><i class=\"bi bi-calendar-event me-2\"></i>Created:</span> <span class=\"text-dark\">${createdAt}</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class=\"col-12 col-md-6\">
+                                            <div class=\"section-heading mb-2\"><i class=\"bi bi-clipboard-data me-1\"></i>Ticket Info</div>
+                                            <div class=\"card border-0 shadow-sm h-100\">
+                                                <div class=\"card-body p-3\">
+                                                    <div class=\"mb-2\"><span class=\"fw-semibold\"><i class=\"bi bi-hdd-network me-2\"></i>Issue:</span> <span class=\"text-dark\">${data.complaint.network || 'N/A'}</span></div>
+                                                    <div class=\"mb-2\"><span class=\"fw-semibold\"><i class=\"bi bi-geo-alt me-2\"></i>Section:</span> <span class=\"text-dark\">${data.complaint.section || 'N/A'}</span></div>
+                                                    <div class=\"mb-2\"><span class=\"fw-semibold\"><i class=\"bi bi-layers me-2\"></i>Vertical:</span> <span class=\"text-dark\">${data.complaint.vertical || 'N/A'}</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class=\"section-heading mt-4 mb-2\"><i class=\"bi bi-card-text me-1\"></i>Description</div>
+                                    <div class=\"card border-0 shadow-sm mb-2\">
+                                        <div class=\"card-body p-3\">
+                                            <div class=\"ps-2 text-muted\">${data.complaint.description || ''}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <style>
+                                    .lookup-modal-unique-v2 { max-width: 900px; margin: 0 auto; }
+                                    .lookup-ribbon {
+                                        background: linear-gradient(90deg,#0d6efd,#0a58ca);
+                                        color: #fff;
+                                        font-size: 1.1rem;
+                                        font-weight: 600;
+                                        border-radius: 0 0 16px 16px;
+                                        padding: 0.75rem 1.5rem;
+                                        box-shadow: 0 2px 8px rgba(13,110,253,0.10);
+                                        text-align: left;
+                                    }
+                                    .lookup-infobar {
+                                        background: #f8fafc;
+                                        border: 1px solid #e3e8ef;
+                                    }
+                                    .section-heading { position: relative; z-index: 2; background: #fff; display: inline-block; padding-right: 8px; font-size: 1rem; font-weight: 700; color: #0d6efd; letter-spacing: 0.5px; }
+                                    .lookup-modal-unique-v2 .card { transition: box-shadow 0.2s; border-radius: 12px; }
+                                    .lookup-modal-unique-v2 .card:hover { box-shadow: 0 0.5rem 1.5rem rgba(13,110,253,0.10); }
+                                    @media (max-width: 1100px) {
+                                        .lookup-modal-unique-v2 { max-width: 99vw; }
+                                    }
+                                </style>
+                                `;
                                 complaintDetailsBody.innerHTML = html;
                                 // Hide search modal and cleanup
                                 const searchModal = bootstrap.Modal.getInstance(document.getElementById('searchTicketModal'));
