@@ -29,26 +29,27 @@ class ComplaintController extends Controller
 
         $query = Complaint::query()->with(['client', 'assignedTo', 'networkType', 'vertical', 'status']);
 
+        $status = (array) request('status'); // Always cast to array
+
         if ($user) {
             if ($user->isManager()) {
-                // Manager: See all active complaints
-                $activeStatusIds = Status::whereIn('name', [
-                    'unassigned',
-                    'assigned',
-                    'pending_with_vendor',
-                    'pending_with_user',
-                    'assign_to_me',
-                    'completed'
-                ])->pluck('id');
-                $query->whereIn('status_id', $activeStatusIds);
+                if (empty($status)) {
+                    // Only restrict if no status filter is applied
+                    $activeStatusIds = Status::whereIn('name', [
+                        'unassigned',
+                        'assigned',
+                        'pending_with_vendor',
+                        'pending_with_user',
+                        'assign_to_me',
+                        'completed'
+                    ])->pluck('id');
+                    $query->whereIn('status_id', $activeStatusIds);
+                }
             } elseif ($user->isVM()) {
-                // VM: Only complaints matching user's vertical
                 $query->where('vertical_id', $user->vertical_id);
             } elseif ($user->isNFO()) {
-                // NFO: Only complaints assigned to them
                 $query->where('assigned_to', $user->id);
             } else {
-                // Client: Only their own complaints
                 $query->where('client_id', $user->id);
             }
         }
@@ -66,7 +67,6 @@ class ComplaintController extends Controller
         }
 
         // Status filter
-        $status = (array) request('status'); // Always cast to array
         if (!empty($status)) {
             $assignToMeStatusId = \App\Models\Status::where('name', 'assign_to_me')->value('id');
             if (in_array('assign_to_me', $status) || ($assignToMeStatusId && in_array($assignToMeStatusId, $status))) {
