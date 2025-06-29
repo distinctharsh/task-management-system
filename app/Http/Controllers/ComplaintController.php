@@ -533,14 +533,16 @@ class ComplaintController extends Controller
                 'success' => true,
                 'complaint' => [
                     'reference_number' => $complaint->reference_number,
+                    'name' => $complaint->client?->full_name ?? $complaint->user_name ?? 'Guest',
+                    'intercom' => $complaint->intercom,
                     'status' => $complaint->status?->display_name ?? 'Unknown',
                     'status_color' => $complaint->status_color,
                     'priority' => ucfirst($complaint->priority),
                     'priority_color' => $complaint->priority_color,
-                    'created_by' => $complaint->client?->full_name ?? $complaint->user_name ?? 'Guest',
                     'created_at' => $complaint->created_at->format('M d, Y H:i'),
                     'description' => $complaint->description,
                     'network' => $complaint->networkType?->name ?? 'N/A',
+                    'section' => $complaint->section?->name ?? 'N/A',
                     'vertical' => $complaint->vertical?->name ?? 'N/A',
                 ]
             ]);

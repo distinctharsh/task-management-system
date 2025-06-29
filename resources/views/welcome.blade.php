@@ -292,13 +292,15 @@
                             }
                             if (res.ok && data.success) {
                                 let html = `<div class='mb-2'><strong>Reference:</strong> ${data.complaint.reference_number}</div>`;
+                                html += `<div class='mb-2'><strong>Name:</strong> ${data.complaint.name}</div>`;
+                                html += `<div class='mb-2'><strong>Intercom:</strong> ${data.complaint.intercom}</div>`;
+                                html += `<div class='mb-2'><strong>Issue Type:</strong> ${data.complaint.network}</div>`;
+                                html += `<div class='mb-2'><strong>Section:</strong> ${data.complaint.section}</div>`;
+                                html += `<div class='mb-2'><strong>Vertical:</strong> ${data.complaint.vertical}</div>`;
                                 html += `<div class='mb-2'><strong>Status:</strong> <span class='badge bg-${data.complaint.status_color}'>${data.complaint.status}</span></div>`;
                                 html += `<div class='mb-2'><strong>Priority:</strong> <span class='badge bg-${data.complaint.priority_color}'>${data.complaint.priority}</span></div>`;
-                                html += `<div class='mb-2'><strong>Created By:</strong> ${data.complaint.created_by}</div>`;
-                                html += `<div class='mb-2'><strong>Created At:</strong> ${data.complaint.created_at}</div>`;
-                                html += `<div class='mb-2'><strong>Network:</strong> ${data.complaint.network}</div>`;
-                                html += `<div class='mb-2'><strong>Vertical:</strong> ${data.complaint.vertical}</div>`;
                                 html += `<div class='mb-2'><strong>Description:</strong><br><span class='text-muted'>${data.complaint.description}</span></div>`;
+                                html += `<div class='mb-2'><strong>Created At:</strong> ${data.complaint.created_at}</div>`;
                                 complaintDetailsBody.innerHTML = html;
                                 // Hide search modal and cleanup
                                 const searchModal = bootstrap.Modal.getInstance(document.getElementById('searchTicketModal'));
