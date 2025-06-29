@@ -36,10 +36,20 @@
                                 </select>
                                 {{-- <span class="text-muted ms-1">entries per page</span> --}}
                             </div>
-                            <div class="col-auto">
-                                <select name="status[]" id="status-filter" class="form-select" multiple onchange="this.form.submit()">
+                            <div class="col-auto position-relative" style="min-width: 200px;">
+                                <span class="filter-status-icon">
+                                    <i class="bi bi-funnel"></i>
+                                </span>
+                                <select name="status[]" id="status-filter"
+                                    class="form-select filter-status-select"
+                                    multiple
+                                    onchange="this.form.submit()"
+                                    style="padding-left: 2.2rem;">
+                                    <option value="" disabled selected>Filter by Status</option>
                                     @foreach($statuses as $status)
-                                        <option value="{{ $status->id }}" {{ collect(request('status'))->contains($status->id) ? 'selected' : '' }}>{{ $status->display_name }}</option>
+                                        <option value="{{ $status->id }}" {{ collect(request('status'))->contains($status->id) ? 'selected' : '' }}>
+                                            {{ $status->display_name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -353,4 +363,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<style>
+.filter-status-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #0d6efd;
+    font-size: 1.1rem;
+    z-index: 2;
+    pointer-events: none;
+}
+.filter-status-select {
+    border-radius: 2rem;
+    background: #f4f8ff;
+    border: 1.5px solid #e3e8ef;
+    min-width: 180px;
+    box-shadow: 0 2px 8px rgba(13,110,253,0.04);
+    color: #212529;
+    font-size: 1rem;
+    font-style: normal;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.filter-status-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.15rem rgba(13,110,253,0.10);
+}
+.filter-status-select option[disabled] {
+    color: #adb5bd;
+    font-style: italic;
+}
+</style>
 @endpush

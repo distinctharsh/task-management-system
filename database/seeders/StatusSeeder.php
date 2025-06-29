@@ -41,7 +41,7 @@ class StatusSeeder extends Seeder
             [
                 'name' => 'pending_with_user',
                 'slug' => 'pending-with-user',
-                'color' => 'primary',
+                'color' => 'warning',
                 'description' => 'Assigned user has set status to pending with user',
                 'is_active' => true,
                 'sort_order' => 4,
